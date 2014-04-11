@@ -24,7 +24,7 @@
 #define TAG_RATE_BTN    1006
 
 //param
-#define FLOOR_SPEED     2.5
-#define BIRD_ANIM_S     0.15
+#define FLOOR_SPEED     2.5f
+#define BIRD_ANIM_S     0.15f
 
 #endif

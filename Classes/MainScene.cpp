@@ -31,6 +31,9 @@ bool MainWorld::init()
     Size visibleSize = Director::getInstance()->getVisibleSize();
     Point origin = Director::getInstance()->getVisibleOrigin();
 
+	log("%f",visibleSize.width);
+	log("%f",visibleSize.height);
+
 	// game bg
 	auto bg = Sprite::create(RES_BIRD_BG);
 	bg->setPosition(origin.x+visibleSize.width / 2, origin.y+visibleSize.height / 2);
@@ -101,7 +104,7 @@ bool MainWorld::init()
 	this->addChild(menu, 2);
 
 	//rank btn
-	auto rankBtn = MenuItemImage::create(RES_BIRD_RANK, RES_BIRD_RANKP, CC_CALLBACK_1(MainWorld::gameStart, this));
+	auto rankBtn = MenuItemImage::create(RES_BIRD_RANK, RES_BIRD_RANKP, CC_CALLBACK_1(MainWorld::gameRank, this));
 	rankBtn->setScale(scaleX,scaleY);
 	rankBtn->setPosition(origin.x+(3*visibleSize.width) / 4, origin.y+rankBtn->getScaleY()*startBtn->getContentSize().height/2+floor->getContentSize().height*floor->getScaleY());
 	auto menu2 = Menu::create(rankBtn, NULL);
@@ -110,7 +113,7 @@ bool MainWorld::init()
 	this->addChild(menu2, 2);
 
 	//rate Btn
-	auto rateBtn = MenuItemImage::create(RES_BIRD_RATE, RES_BIRD_RATE, CC_CALLBACK_1(MainWorld::gameStart, this));
+	auto rateBtn = MenuItemImage::create(RES_BIRD_RATE, RES_BIRD_RATE, CC_CALLBACK_1(MainWorld::gameRate, this));
 	rateBtn->setScale(scaleX,scaleY);
 	rateBtn->setPosition(origin.x+visibleSize.width / 2, origin.y+visibleSize.height*0.5);
 	auto menu3 = Menu::create(rateBtn, NULL);
@@ -133,6 +136,16 @@ bool MainWorld::init()
 
 void MainWorld::gameStart(Ref* pSender)
 {
+}
+
+void MainWorld::gameRate(Ref* pSender)
+{
+
+}
+
+void MainWorld::gameRank(Ref* pSender)
+{
+
 }
 
 void MainWorld::update(float time)

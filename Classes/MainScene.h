@@ -15,6 +15,9 @@ public:
     virtual bool init();  
     
 	void gameStart(Ref* pSender);
+	void gameRank(Ref* pSender);
+	void gameRate(Ref* pSender);
+
 	void update(float time);
 
 	void onTouchesEnded(const vector<Touch*>& touches, Event* event);
