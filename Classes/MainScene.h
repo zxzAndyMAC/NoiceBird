@@ -25,6 +25,16 @@ public:
 
     // implement the "static create()" method manually
     CREATE_FUNC(MainWorld);
+
+	Sprite *pipelines_down[3];
+	Sprite *pipelines_up[3];
+
+private:
+	int  b_gamestate;
+	
+
+	void updateFloor();
+	void updatePipelines();
 };
 
 #endif // __HELLOWORLD_SCENE_H__

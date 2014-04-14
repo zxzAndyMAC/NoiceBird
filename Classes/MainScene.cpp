@@ -3,6 +3,8 @@
 
 USING_NS_CC;
 
+static float dis = 0.0f;
+
 Scene* MainWorld::createScene()
 {
     // 'scene' is an autorelease object
@@ -28,11 +30,15 @@ bool MainWorld::init()
         return false;
     }
     
+	srand ((unsigned)time(NULL));
+
     Size visibleSize = Director::getInstance()->getVisibleSize();
     Point origin = Director::getInstance()->getVisibleOrigin();
 
 	log("%f",visibleSize.width);
 	log("%f",visibleSize.height);
+
+	b_gamestate = GAME_STATUS_START;
 
 	// game bg
 	auto bg = Sprite::create(RES_BIRD_BG);
@@ -71,13 +77,13 @@ bool MainWorld::init()
 	floor->setAnchorPoint(Point::ZERO);
 	floor->setPosition(origin.x,origin.y);
 	floor->setTag(TAG_FLOOR_1);
-	auto action_floor = Sequence::create(MoveTo::create(FLOOR_SPEED, Point(-1*visibleSize.width,origin.y)),										
-										CallFunc::create(
-										[&](){
-												Point origin = Director::getInstance()->getVisibleOrigin();
-												this->getChildByTag(TAG_FLOOR_1)->setPosition(origin.x,origin.y);
-									         }),NULL);
-	floor->runAction(RepeatForever::create(action_floor));
+	//auto action_floor = Sequence::create(MoveTo::create(FLOOR_SPEED, Point(-1*visibleSize.width,origin.y)),										
+	//									CallFunc::create(
+	//									[&](){
+	//											Point origin = Director::getInstance()->getVisibleOrigin();
+	//											this->getChildByTag(TAG_FLOOR_1)->setPosition(origin.x,origin.y);
+	//								         }),NULL);
+	//floor->runAction(RepeatForever::create(action_floor));
 	this->addChild(floor,2);
     
 	auto floor2 = Sprite::create(RES_BIRD_FLOOR);
@@ -85,13 +91,13 @@ bool MainWorld::init()
 	floor2->setAnchorPoint(Point::ZERO);
 	floor2->setPosition(origin.x+visibleSize.width,origin.y);
 	floor2->setTag(TAG_FLOOR_2);
-	auto action_floor2 = Sequence::create(MoveTo::create(FLOOR_SPEED, Point(origin.x,origin.y)),										
-		CallFunc::create(
-		[&](){
-			Point origin = Director::getInstance()->getVisibleOrigin();
-			this->getChildByTag(TAG_FLOOR_2)->setPosition(origin.x+Director::getInstance()->getVisibleSize().width,origin.y);
-	}),NULL);
-	floor2->runAction(RepeatForever::create(action_floor2));
+	//auto action_floor2 = Sequence::create(MoveTo::create(FLOOR_SPEED, Point(origin.x,origin.y)),										
+	//	CallFunc::create(
+	//	[&](){
+	//		Point origin = Director::getInstance()->getVisibleOrigin();
+	//		this->getChildByTag(TAG_FLOOR_2)->setPosition(origin.x+Director::getInstance()->getVisibleSize().width,origin.y);
+	//}),NULL);
+	//floor2->runAction(RepeatForever::create(action_floor2));
 	this->addChild(floor2,2);
 
 	// start btn
@@ -121,6 +127,22 @@ bool MainWorld::init()
 	menu3->setTag(TAG_RATE_BTN);
 	this->addChild(menu3, 2);
 
+	//pipeline
+	for(int i=0;i<3;i++)
+	{
+		pipelines_down[i] = Sprite::create(RES_BIRD_OBD);
+		pipelines_down[i]->setScale(scaleX,scaleY);
+		pipelines_down[i]->setVisible(false);
+		pipelines_down[i]->setAnchorPoint(Point::ZERO);
+		this->addChild(pipelines_down[i], 1);
+
+		pipelines_up[i] = Sprite::create(RES_BIRD_OBU);
+		pipelines_up[i]->setScale(scaleX,scaleY);
+		pipelines_up[i]->setVisible(false);
+		pipelines_up[i]->setAnchorPoint(Point::ZERO);
+		this->addChild(pipelines_up[i], 1);
+	}
+
 	// update 
 	scheduleUpdate();
 
@@ -136,6 +158,44 @@ bool MainWorld::init()
 
 void MainWorld::gameStart(Ref* pSender)
 {
+	auto action = Sequence::create(DelayTime::create(2.0f),										
+		CallFunc::create(
+		[&](){
+			this->b_gamestate = GAME_STATUS_PLAYING;
+			pipelines_up[0]->setVisible(true);
+			pipelines_down[0]->setVisible(true);
+			Size visibleSize = Director::getInstance()->getVisibleSize();
+			Point origin = Director::getInstance()->getVisibleOrigin();
+			auto floor_1 = this->getChildByTag(TAG_FLOOR_1);
+			auto floor_h = floor_1->getContentSize().height*(floor_1->getScaleY());
+			auto min_y = floor_h + (MIN_UP_DOWN/4);
+			auto max_y = visibleSize.height - (MIN_UP_DOWN*5/4);
+			auto y = CCRANDOM_0_1()*(max_y - min_y) + min_y;
+			dis = y;
+			auto h = pipelines_down[0]->getContentSize().height*pipelines_down[0]->getScaleY();
+			pipelines_down[0]->setPosition(origin.x + visibleSize.width, origin.y+y-h);
+			pipelines_up[0]->setPosition(origin.x + visibleSize.width, origin.y+y+MIN_UP_DOWN);
+
+			auto y2 = CCRANDOM_0_1()*(max_y - min_y) + min_y;
+			while(abs((int)y2 - (int)dis)<=100)
+			{
+				y2 = CCRANDOM_0_1()*(max_y - min_y) + min_y;
+			}
+			dis = y2;
+			pipelines_down[1]->setPosition(origin.x + visibleSize.width + MIN_LEFT_RIGHT, origin.y+y2-h);
+			pipelines_up[1]->setPosition(origin.x + visibleSize.width + MIN_LEFT_RIGHT, origin.y+y2+MIN_UP_DOWN);
+
+			auto y3 = CCRANDOM_0_1()*(max_y - min_y) + min_y;
+			while(abs((int)y3 - (int)dis)<=100)
+			{
+				y3 = CCRANDOM_0_1()*(max_y - min_y) + min_y;
+			}
+			dis = y3;
+			pipelines_down[2]->setPosition(origin.x + visibleSize.width + MIN_LEFT_RIGHT*2, origin.y+y3-h);
+			pipelines_up[2]->setPosition(origin.x + visibleSize.width + MIN_LEFT_RIGHT*2, origin.y+y3+MIN_UP_DOWN);
+	}),NULL);
+
+	this->runAction(action);
 }
 
 void MainWorld::gameRate(Ref* pSender)
@@ -150,7 +210,75 @@ void MainWorld::gameRank(Ref* pSender)
 
 void MainWorld::update(float time)
 {
+	switch(b_gamestate)
+	{
+	case GAME_STATUS_START:
+		updateFloor();
+		break;
+	case GAME_STATUS_PLAYING:
+		updateFloor();
+		updatePipelines();
+		break;
+	}
+}
 
+void MainWorld::updatePipelines()
+{
+	Size visibleSize = Director::getInstance()->getVisibleSize();
+	Point origin = Director::getInstance()->getVisibleOrigin();
+	for(int i=0;i<3;i++)
+	{
+		auto x = pipelines_up[i]->getPositionX();
+		auto w = pipelines_up[i]->getContentSize().width*pipelines_up[i]->getScaleX();
+		if(x+w<=0)
+		{
+			auto floor_1 = this->getChildByTag(TAG_FLOOR_1);
+			auto floor_h = floor_1->getContentSize().height*(floor_1->getScaleY());
+			auto min_y = floor_h + (MIN_UP_DOWN/4);
+			auto max_y = visibleSize.height - (MIN_UP_DOWN*5/4);
+			auto y = CCRANDOM_0_1()*(max_y - min_y) + min_y;
+			while(abs((int)y - (int)dis)<=100)
+			{
+				y = CCRANDOM_0_1()*(max_y - min_y) + min_y;
+			}
+			dis = y;
+			auto h = pipelines_down[i]->getContentSize().height*pipelines_down[i]->getScaleY();
+			auto f_x = i==0 ? pipelines_up[2]->getPositionX() : pipelines_up[i-1]->getPositionX();
+			pipelines_down[i]->setPosition(f_x+MIN_LEFT_RIGHT, origin.y+y-h);
+			pipelines_up[i]->setPosition(f_x+MIN_LEFT_RIGHT, origin.y+y+MIN_UP_DOWN);
+			pipelines_down[i]->setVisible(false);
+			pipelines_up[i]->setVisible(false);
+			continue;
+		}
+		pipelines_up[i]->setPositionX(x - FLOOR_SPEED);
+		pipelines_down[i]->setPositionX(x - FLOOR_SPEED);
+		if(x - FLOOR_SPEED <= visibleSize.width && !pipelines_up[i]->isVisible())
+		{
+			pipelines_up[i]->setVisible(true);
+			pipelines_down[i]->setVisible(true);
+		}
+	}
+}
+
+void MainWorld::updateFloor()
+{
+	//update floor 
+	Size visibleSize = Director::getInstance()->getVisibleSize();
+	Point origin = Director::getInstance()->getVisibleOrigin();
+	auto floor_1 = this->getChildByTag(TAG_FLOOR_1);
+	auto floor_2 = this->getChildByTag(TAG_FLOOR_2);
+
+	auto floor_1_x = floor_1->getPositionX();
+	if(floor_1_x<=-1*visibleSize.width)
+		floor_1->setPositionX(origin.x);
+	else
+		floor_1->setPositionX(floor_1_x-FLOOR_SPEED);
+
+	auto floor_2_x = floor_2->getPositionX();
+	if(floor_2_x<=origin.x)
+		floor_2->setPositionX(origin.x+visibleSize.width);
+	else
+		floor_2->setPositionX(floor_2_x-FLOOR_SPEED);
 }
 
 void MainWorld::onTouchesBegan(const vector<Touch*>& touches, Event* event)

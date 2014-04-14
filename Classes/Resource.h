@@ -13,6 +13,8 @@
 #define RES_BIRD_RANK     "bird/bird_rank.png"
 #define RES_BIRD_RANKP    "bird/bird_rank_press.png"
 #define RES_BIRD_RATE     "bird/bird_rate.png"
+#define	RES_BIRD_OBD      "bird/obstacle_down.png"
+#define	RES_BIRD_OBU      "bird/obstacle_up.png"
 
 //TAG
 #define TAG_LOGO		1000
@@ -24,7 +26,15 @@
 #define TAG_RATE_BTN    1006
 
 //param
-#define FLOOR_SPEED     2.5f
+#define FLOOR_SPEED     7
 #define BIRD_ANIM_S     0.15f
+#define MIN_LEFT_RIGHT  400
+#define MIN_UP_DOWN     200
+
+//states
+#define GAME_STATUS_START      10
+#define GAME_STATUS_PLAYING    20
+#define GAME_STATUS_GAME_OVER  30
+#define GAME_STATUS_RESTART    40
 
 #endif
