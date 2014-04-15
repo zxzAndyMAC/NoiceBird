@@ -30,11 +30,16 @@ public:
 	Sprite *pipelines_up[3];
 
 private:
-	int  b_gamestate;
-	
+	int   b_gamestate;
+	float b_velocity;
 
-	void updateFloor();
-	void updatePipelines();
+	void  initBird();
+	void  updateFloor();
+	void  updatePipelines();
+	void  updateBird();
+	void  checkCollision();
+	void  setStartMenuVisiable(bool isVisiable);
+	float randh();
 };
 
 #endif // __HELLOWORLD_SCENE_H__

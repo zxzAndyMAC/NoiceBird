@@ -1,6 +1,10 @@
 #include "MainScene.h"
 #include "Resource.h"
 
+#ifdef BIRD_DEBUG
+#include "FileR.h"
+#endif
+
 USING_NS_CC;
 
 static float dis = 0.0f;
@@ -30,6 +34,10 @@ bool MainWorld::init()
         return false;
     }
     
+#ifdef BIRD_DEBUG
+	FileR::ReadConfig();
+#endif // BIRD_DEBUG
+
 	srand ((unsigned)time(NULL));
 
     Size visibleSize = Director::getInstance()->getVisibleSize();
@@ -39,6 +47,7 @@ bool MainWorld::init()
 	log("%f",visibleSize.height);
 
 	b_gamestate = GAME_STATUS_START;
+	b_velocity  =  BIRD_VELOCITY;
 
 	// game bg
 	auto bg = Sprite::create(RES_BIRD_BG);
@@ -61,15 +70,8 @@ bool MainWorld::init()
 	bird->setScale(scaleX,scaleY);
 	bird->setPosition(origin.x+visibleSize.width / 2, origin.y+visibleSize.height*0.6);
 	bird->setTag(TAG_BIRD);
-	this->addChild(bird, 1);
-	Animation* an = Animation::create();
-	an->addSpriteFrameWithFile(RES_BIRD_BIRD);
-	an->addSpriteFrameWithFile(RES_BIRD_BIRD1);
-	an->addSpriteFrameWithFile(RES_BIRD_BIRD2);
-	an->setDelayPerUnit(BIRD_ANIM_S);
-	an->setLoops(-1);
-	Animate* anim = Animate::create(an);
-	bird->runAction(anim);
+	this->addChild(bird, 2);
+	initBird();
 
 	//floor
 	auto floor = Sprite::create(RES_BIRD_FLOOR);
@@ -77,28 +79,14 @@ bool MainWorld::init()
 	floor->setAnchorPoint(Point::ZERO);
 	floor->setPosition(origin.x,origin.y);
 	floor->setTag(TAG_FLOOR_1);
-	//auto action_floor = Sequence::create(MoveTo::create(FLOOR_SPEED, Point(-1*visibleSize.width,origin.y)),										
-	//									CallFunc::create(
-	//									[&](){
-	//											Point origin = Director::getInstance()->getVisibleOrigin();
-	//											this->getChildByTag(TAG_FLOOR_1)->setPosition(origin.x,origin.y);
-	//								         }),NULL);
-	//floor->runAction(RepeatForever::create(action_floor));
-	this->addChild(floor,2);
+	this->addChild(floor,3);
     
 	auto floor2 = Sprite::create(RES_BIRD_FLOOR);
 	floor2->setScale(visibleSize.width / floor2->getContentSize().width, visibleSize.height/480);
 	floor2->setAnchorPoint(Point::ZERO);
 	floor2->setPosition(origin.x+visibleSize.width,origin.y);
 	floor2->setTag(TAG_FLOOR_2);
-	//auto action_floor2 = Sequence::create(MoveTo::create(FLOOR_SPEED, Point(origin.x,origin.y)),										
-	//	CallFunc::create(
-	//	[&](){
-	//		Point origin = Director::getInstance()->getVisibleOrigin();
-	//		this->getChildByTag(TAG_FLOOR_2)->setPosition(origin.x+Director::getInstance()->getVisibleSize().width,origin.y);
-	//}),NULL);
-	//floor2->runAction(RepeatForever::create(action_floor2));
-	this->addChild(floor2,2);
+	this->addChild(floor2,3);
 
 	// start btn
 	auto startBtn = MenuItemImage::create(RES_BIRD_SBTN, RES_BIRD_SBTNP, CC_CALLBACK_1(MainWorld::gameStart, this));
@@ -156,46 +144,59 @@ bool MainWorld::init()
     return true;
 }
 
+void MainWorld::initBird()
+{
+	auto bird  = this->getChildByTag(TAG_BIRD);
+	bird->setRotation(0);
+	Animation* an = Animation::create();
+	an->addSpriteFrameWithFile(RES_BIRD_BIRD);
+	an->addSpriteFrameWithFile(RES_BIRD_BIRD1);
+	an->addSpriteFrameWithFile(RES_BIRD_BIRD2);
+	an->setDelayPerUnit(BIRD_ANIM_S);
+	an->setLoops(-1);
+	Animate* anim = Animate::create(an);
+	bird->runAction(anim);
+}
+
 void MainWorld::gameStart(Ref* pSender)
 {
+	setStartMenuVisiable(false);
+	this->b_gamestate = GAME_STATUS_READY;
 	auto action = Sequence::create(DelayTime::create(2.0f),										
 		CallFunc::create(
 		[&](){
+			if(this->b_gamestate == GAME_STATUS_GAME_OVER)
+				return;
 			this->b_gamestate = GAME_STATUS_PLAYING;
 			pipelines_up[0]->setVisible(true);
 			pipelines_down[0]->setVisible(true);
 			Size visibleSize = Director::getInstance()->getVisibleSize();
 			Point origin = Director::getInstance()->getVisibleOrigin();
-			auto floor_1 = this->getChildByTag(TAG_FLOOR_1);
-			auto floor_h = floor_1->getContentSize().height*(floor_1->getScaleY());
-			auto min_y = floor_h + (MIN_UP_DOWN/4);
-			auto max_y = visibleSize.height - (MIN_UP_DOWN*5/4);
-			auto y = CCRANDOM_0_1()*(max_y - min_y) + min_y;
-			dis = y;
+
+			auto y = randh();
 			auto h = pipelines_down[0]->getContentSize().height*pipelines_down[0]->getScaleY();
 			pipelines_down[0]->setPosition(origin.x + visibleSize.width, origin.y+y-h);
 			pipelines_up[0]->setPosition(origin.x + visibleSize.width, origin.y+y+MIN_UP_DOWN);
 
-			auto y2 = CCRANDOM_0_1()*(max_y - min_y) + min_y;
-			while(abs((int)y2 - (int)dis)<=100)
-			{
-				y2 = CCRANDOM_0_1()*(max_y - min_y) + min_y;
-			}
-			dis = y2;
-			pipelines_down[1]->setPosition(origin.x + visibleSize.width + MIN_LEFT_RIGHT, origin.y+y2-h);
-			pipelines_up[1]->setPosition(origin.x + visibleSize.width + MIN_LEFT_RIGHT, origin.y+y2+MIN_UP_DOWN);
+			y = randh();
+			pipelines_down[1]->setPosition(origin.x + visibleSize.width + MIN_LEFT_RIGHT, origin.y+y-h);
+			pipelines_up[1]->setPosition(origin.x + visibleSize.width + MIN_LEFT_RIGHT, origin.y+y+MIN_UP_DOWN);
 
-			auto y3 = CCRANDOM_0_1()*(max_y - min_y) + min_y;
-			while(abs((int)y3 - (int)dis)<=100)
-			{
-				y3 = CCRANDOM_0_1()*(max_y - min_y) + min_y;
-			}
-			dis = y3;
-			pipelines_down[2]->setPosition(origin.x + visibleSize.width + MIN_LEFT_RIGHT*2, origin.y+y3-h);
-			pipelines_up[2]->setPosition(origin.x + visibleSize.width + MIN_LEFT_RIGHT*2, origin.y+y3+MIN_UP_DOWN);
+			y = randh();
+
+			pipelines_down[2]->setPosition(origin.x + visibleSize.width + MIN_LEFT_RIGHT*2, origin.y+y-h);
+			pipelines_up[2]->setPosition(origin.x + visibleSize.width + MIN_LEFT_RIGHT*2, origin.y+y+MIN_UP_DOWN);
 	}),NULL);
 
 	this->runAction(action);
+}
+
+void MainWorld::setStartMenuVisiable(bool isVisiable)
+{
+	this->getChildByTag(TAG_START_BTN)->setVisible(isVisiable);
+	this->getChildByTag(TAG_RANK_BTN)->setVisible(isVisiable);
+	this->getChildByTag(TAG_RATE_BTN)->setVisible(isVisiable);
+	this->getChildByTag(TAG_LOGO)->setVisible(isVisiable);
 }
 
 void MainWorld::gameRate(Ref* pSender)
@@ -215,10 +216,47 @@ void MainWorld::update(float time)
 	case GAME_STATUS_START:
 		updateFloor();
 		break;
+	case GAME_STATUS_READY:
+		checkCollision();
+		updateFloor();
+		updateBird();
+		break;
 	case GAME_STATUS_PLAYING:
+		checkCollision();
 		updateFloor();
 		updatePipelines();
+		updateBird();
 		break;
+	case GAME_STATUS_GAME_OVER:
+		updateBird();
+		break;
+	case GAME_STATUS_GAME_END:
+		break;
+	}
+}
+
+void MainWorld::checkCollision()
+{
+	Sprite* bird = (Sprite*)this->getChildByTag(TAG_BIRD);
+	Rect rect_o = bird->getBoundingBox();
+	Rect rect = Rect(rect_o.getMinX()+4, rect_o.getMinY()+4, bird->getContentSize().width*bird->getScaleX()-8,bird->getContentSize().height*bird->getScaleY()-8);
+
+	bool ao_f = rect.intersectsRect(this->getChildByTag(TAG_FLOOR_1)->getBoundingBox());
+	bool ao_f2 = rect.intersectsRect(this->getChildByTag(TAG_FLOOR_2)->getBoundingBox());
+	if(ao_f || ao_f2)
+	{
+		b_gamestate = GAME_STATUS_GAME_OVER;
+		return;
+	}
+	for(int i=0;i<3;i++)
+	{
+		bool ao_u = rect.intersectsRect(pipelines_up[i]->getBoundingBox());
+		bool ao_d = rect.intersectsRect(pipelines_down[i]->getBoundingBox());
+		if(ao_u || ao_d)
+		{
+			b_gamestate = GAME_STATUS_GAME_OVER;
+			break;
+		}
 	}
 }
 
@@ -232,16 +270,7 @@ void MainWorld::updatePipelines()
 		auto w = pipelines_up[i]->getContentSize().width*pipelines_up[i]->getScaleX();
 		if(x+w<=0)
 		{
-			auto floor_1 = this->getChildByTag(TAG_FLOOR_1);
-			auto floor_h = floor_1->getContentSize().height*(floor_1->getScaleY());
-			auto min_y = floor_h + (MIN_UP_DOWN/4);
-			auto max_y = visibleSize.height - (MIN_UP_DOWN*5/4);
-			auto y = CCRANDOM_0_1()*(max_y - min_y) + min_y;
-			while(abs((int)y - (int)dis)<=100)
-			{
-				y = CCRANDOM_0_1()*(max_y - min_y) + min_y;
-			}
-			dis = y;
+			auto y = randh();
 			auto h = pipelines_down[i]->getContentSize().height*pipelines_down[i]->getScaleY();
 			auto f_x = i==0 ? pipelines_up[2]->getPositionX() : pipelines_up[i-1]->getPositionX();
 			pipelines_down[i]->setPosition(f_x+MIN_LEFT_RIGHT, origin.y+y-h);
@@ -258,6 +287,23 @@ void MainWorld::updatePipelines()
 			pipelines_down[i]->setVisible(true);
 		}
 	}
+}
+
+float MainWorld::randh()
+{
+	auto floor_1 = this->getChildByTag(TAG_FLOOR_1);
+	auto floor_h = floor_1->getContentSize().height*(floor_1->getScaleY());
+	auto min_y = floor_h + (MIN_UP_DOWN/4);
+	auto max_y = Director::getInstance()->getVisibleSize().height - (MIN_UP_DOWN*5/4);
+	auto y = CCRANDOM_0_1()*(max_y - min_y) + min_y;
+	int count = 0;
+	while(abs((int)y - (int)dis)<=MIN_DIS && abs((int)y - (int)dis)>=MAX_DIS && count<=10)
+	{
+		y = CCRANDOM_0_1()*(max_y - min_y) + min_y;
+		++count;
+	}
+	dis = y;
+	return y;
 }
 
 void MainWorld::updateFloor()
@@ -281,9 +327,46 @@ void MainWorld::updateFloor()
 		floor_2->setPositionX(floor_2_x-FLOOR_SPEED);
 }
 
+void MainWorld::updateBird()
+{
+	auto bird  = this->getChildByTag(TAG_BIRD);
+	if(this->b_gamestate == GAME_STATUS_GAME_OVER)
+	{
+		if(bird->getRotation()<45.0f)
+		{
+			b_velocity  =  BIRD_VELOCITY;
+			bird->setRotation(45);
+			bird->stopAllActions();
+		}
+		float h = (bird->getContentSize().height*bird->getScaleY())/2;
+		float y = bird->getPositionY()-h;
+		auto floor = this->getChildByTag(TAG_FLOOR_1);
+		float y_f = floor->getContentSize().height*floor->getScaleY();
+		if(y>y_f)
+		{
+			b_velocity -= BIRD_GRAVITY;
+			bird->setPositionY(bird->getPositionY() + b_velocity);
+		}
+		else
+		{
+			bird->setPositionY(y_f + h);
+			this->b_gamestate = GAME_STATUS_GAME_END;
+		}
+	}
+	else
+	{
+		b_velocity -= BIRD_GRAVITY;
+		bird->setPositionY(bird->getPositionY() + b_velocity);
+	}
+}
+
 void MainWorld::onTouchesBegan(const vector<Touch*>& touches, Event* event)
 {
 //	log("%s","touch began");
+	if(b_gamestate == GAME_STATUS_READY || b_gamestate == GAME_STATUS_PLAYING)
+	{
+		b_velocity = BIRD_UP_VELOCITY;
+	}
 }
 
 void MainWorld::onTouchesEnded(const vector<Touch*>& touches, Event* event)
