@@ -58,21 +58,6 @@ bool MainWorld::init()
 	float scaleX = visibleSize.width / bg->getContentSize().width;
 	float scaleY = visibleSize.height / bg->getContentSize().height;
 
-	// logo
-	auto logo = Sprite::create(RES_BIRD_LOGO);
-	logo->setScale(scaleX,scaleY);
-	logo->setPosition(origin.x+visibleSize.width / 2, origin.y+visibleSize.height / 2 + logo->getContentSize().height * 2 * scaleY);
-	logo->setTag(TAG_LOGO);
-	this->addChild(logo, 1);
-
-	// bird
-	auto bird = Sprite::create(RES_BIRD_BIRD);
-	bird->setScale(scaleX,scaleY);
-	bird->setPosition(origin.x+visibleSize.width / 2, origin.y+visibleSize.height*0.6);
-	bird->setTag(TAG_BIRD);
-	this->addChild(bird, 2);
-	initBird();
-
 	//floor
 	auto floor = Sprite::create(RES_BIRD_FLOOR);
 	floor->setScale(visibleSize.width / floor->getContentSize().width, visibleSize.height/480);
@@ -88,32 +73,56 @@ bool MainWorld::init()
 	floor2->setTag(TAG_FLOOR_2);
 	this->addChild(floor2,3);
 
-	// start btn
-	auto startBtn = MenuItemImage::create(RES_BIRD_SBTN, RES_BIRD_SBTNP, CC_CALLBACK_1(MainWorld::gameStart, this));
+	// voice btn
+	auto startBtn = MenuItemImage::create(RES_BIRD_VOICE, RES_BIRD_VOICEP, CC_CALLBACK_1(MainWorld::gameNoice, this));
 	startBtn->setScale(scaleX,scaleY);
 	startBtn->setPosition(origin.x+visibleSize.width / 4, origin.y+startBtn->getScaleY()*startBtn->getContentSize().height/2+floor->getContentSize().height*floor->getScaleY());
 	auto menu = Menu::create(startBtn, NULL);
 	menu->setPosition(Point::ZERO);
-	menu->setTag(TAG_START_BTN);
+	menu->setTag(TAG_VOICE_BTN);
 	this->addChild(menu, 2);
+
+	//touch btn
+	auto touchBtn = MenuItemImage::create(RES_BIRD_TOUCH, RES_BIRD_TOUCHP, CC_CALLBACK_1(MainWorld::gameTouch, this));
+	touchBtn->setScale(scaleX,scaleY);
+	touchBtn->setPosition(origin.x+(3*visibleSize.width) / 4, origin.y+touchBtn->getScaleY()*startBtn->getContentSize().height/2+floor->getContentSize().height*floor->getScaleY());
+	auto menu2 = Menu::create(touchBtn, NULL);
+	menu2->setPosition(Point::ZERO);
+	menu2->setTag(TAG_TOUCH_BTN);
+	this->addChild(menu2, 2);
 
 	//rank btn
 	auto rankBtn = MenuItemImage::create(RES_BIRD_RANK, RES_BIRD_RANKP, CC_CALLBACK_1(MainWorld::gameRank, this));
 	rankBtn->setScale(scaleX,scaleY);
-	rankBtn->setPosition(origin.x+(3*visibleSize.width) / 4, origin.y+rankBtn->getScaleY()*startBtn->getContentSize().height/2+floor->getContentSize().height*floor->getScaleY());
-	auto menu2 = Menu::create(rankBtn, NULL);
-	menu2->setPosition(Point::ZERO);
-	menu2->setTag(TAG_RANK_BTN);
-	this->addChild(menu2, 2);
+	rankBtn->setPosition(origin.x+visibleSize.width / 2, origin.y+startBtn->getScaleY()*startBtn->getContentSize().height*3/2+floor->getContentSize().height*floor->getScaleY());
+	auto menu4 = Menu::create(rankBtn, NULL);
+	menu4->setPosition(Point::ZERO);
+	menu4->setTag(TAG_RANK_BTN);
+	this->addChild(menu4, 2);
 
 	//rate Btn
 	auto rateBtn = MenuItemImage::create(RES_BIRD_RATE, RES_BIRD_RATE, CC_CALLBACK_1(MainWorld::gameRate, this));
 	rateBtn->setScale(scaleX,scaleY);
-	rateBtn->setPosition(origin.x+visibleSize.width / 2, origin.y+visibleSize.height*0.5);
+	rateBtn->setPosition(origin.x+visibleSize.width / 2, origin.y + rankBtn->getPositionY() + rateBtn->getContentSize().height*scaleY + rankBtn->getContentSize().height*scaleY/2);
 	auto menu3 = Menu::create(rateBtn, NULL);
 	menu3->setPosition(Point::ZERO);
 	menu3->setTag(TAG_RATE_BTN);
 	this->addChild(menu3, 2);
+
+	// bird
+	auto bird = Sprite::create(RES_BIRD_BIRD);
+	bird->setScale(scaleX,scaleY);
+	bird->setPosition(origin.x+visibleSize.width / 2, origin.y+rateBtn->getPositionY()+rateBtn->getContentSize().height*scaleY+ rateBtn->getContentSize().height*scaleY/2);
+	bird->setTag(TAG_BIRD);
+	this->addChild(bird, 2);
+	initBird();
+
+	// logo
+	auto logo = Sprite::create(RES_BIRD_LOGO);
+	logo->setScale(scaleX,scaleY);
+	logo->setPosition(origin.x+visibleSize.width / 2, origin.y+bird->getPositionY()+bird->getContentSize().height*scaleY+ bird->getContentSize().height*scaleY);
+	logo->setTag(TAG_LOGO);
+	this->addChild(logo, 1);
 
 	//pipeline
 	for(int i=0;i<3;i++)
@@ -158,7 +167,12 @@ void MainWorld::initBird()
 	bird->runAction(anim);
 }
 
-void MainWorld::gameStart(Ref* pSender)
+void MainWorld::gameNoice(Ref* pSender)
+{
+
+}
+
+void MainWorld::gameTouch(Ref* pSender)
 {
 	setStartMenuVisiable(false);
 	this->b_gamestate = GAME_STATUS_READY;
@@ -193,7 +207,8 @@ void MainWorld::gameStart(Ref* pSender)
 
 void MainWorld::setStartMenuVisiable(bool isVisiable)
 {
-	this->getChildByTag(TAG_START_BTN)->setVisible(isVisiable);
+	this->getChildByTag(TAG_VOICE_BTN)->setVisible(isVisiable);
+	this->getChildByTag(TAG_TOUCH_BTN)->setVisible(isVisiable);
 	this->getChildByTag(TAG_RANK_BTN)->setVisible(isVisiable);
 	this->getChildByTag(TAG_RATE_BTN)->setVisible(isVisiable);
 	this->getChildByTag(TAG_LOGO)->setVisible(isVisiable);
