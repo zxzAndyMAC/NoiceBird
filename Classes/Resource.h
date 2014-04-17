@@ -27,16 +27,7 @@
 #define TAG_FLOOR_2     1004
 #define TAG_RANK_BTN	1005
 #define TAG_RATE_BTN    1006
-<<<<<<< HEAD
-
-//param
-#define FLOOR_SPEED     7
-#define BIRD_ANIM_S     0.15f
-#define MIN_LEFT_RIGHT  350
-#define MIN_UP_DOWN     200
-=======
 #define TAG_TOUCH_BTN   1007
->>>>>>> FETCH_HEAD
 
 //states
 #define GAME_STATUS_START      10
@@ -67,6 +58,6 @@ static float MAX_DIS=200.0;
 #define BIRD_GRAVITY     0.5f
 #define BIRD_VELOCITY    5
 #define BIRD_UP_VELOCITY 10
-#define MAX_DIS          250.0
+#define MAX_DIS          200.0
 #endif
 #endif

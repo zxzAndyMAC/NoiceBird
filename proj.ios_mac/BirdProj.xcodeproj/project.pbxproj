@@ -209,6 +209,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0529048218FF84FC0014E90A /* FileR.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FileR.h; path = ../Classes/FileR.h; sourceTree = "<group>"; };
 		059DBFA718F79E260082639C /* bird */ = {isa = PBXFileReference; lastKnownFileType = folder; path = bird; sourceTree = "<group>"; };
 		059DBFA918F79E360082639C /* MainScene.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MainScene.cpp; path = ../Classes/MainScene.cpp; sourceTree = "<group>"; };
 		059DBFAA18F79E360082639C /* MainScene.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MainScene.h; path = ../Classes/MainScene.h; sourceTree = "<group>"; };
@@ -329,6 +330,7 @@
 		15AA9C4015B7EC450033D6C2 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				0529048218FF84FC0014E90A /* FileR.h */,
 				059DBFA918F79E360082639C /* MainScene.cpp */,
 				059DBFAA18F79E360082639C /* MainScene.h */,
 				059DBFAB18F79E360082639C /* Resource.h */,
