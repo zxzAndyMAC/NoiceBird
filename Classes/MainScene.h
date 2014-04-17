@@ -14,7 +14,8 @@ public:
     // Here's a difference. Method 'init' in cocos2d-x returns bool, instead of returning 'id' in cocos2d-iphone
     virtual bool init();  
     
-	void gameStart(Ref* pSender);
+	void gameNoice(Ref* pSender);
+	void gameTouch(Ref* pSender);
 	void gameRank(Ref* pSender);
 	void gameRate(Ref* pSender);
 
@@ -30,11 +31,16 @@ public:
 	Sprite *pipelines_up[3];
 
 private:
-	int  b_gamestate;
-	
+	int   b_gamestate;
+	float b_velocity;
 
-	void updateFloor();
-	void updatePipelines();
+	void  initBird();
+	void  updateFloor();
+	void  updatePipelines();
+	void  updateBird();
+	void  checkCollision();
+	void  setStartMenuVisiable(bool isVisiable);
+	float randh();
 };
 
 #endif // __HELLOWORLD_SCENE_H__
