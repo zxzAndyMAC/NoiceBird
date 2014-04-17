@@ -28,7 +28,7 @@
 //param
 #define FLOOR_SPEED     7
 #define BIRD_ANIM_S     0.15f
-#define MIN_LEFT_RIGHT  400
+#define MIN_LEFT_RIGHT  350
 #define MIN_UP_DOWN     200
 
 //states
