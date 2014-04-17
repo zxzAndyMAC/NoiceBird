@@ -13,7 +13,11 @@ class FileR
 public:
 	inline static void ReadConfig()
 	{
+#ifdef WIN32
 		FILE *fp = fopen("configure.txt", "r");
+#else
+        FILE *fp = fopen("/Volumes/Development/NoiceBird/Resources/configure.txt", "r");
+#endif
 
 		char buf[30];
 		char *x = fgets(buf, 50, fp);
@@ -47,6 +51,10 @@ public:
 		x = fgets(buf, 50, fp);
 		strncpy(buf,x+17,10);
 		BIRD_UP_VELOCITY = atof(buf);
+        
+        x = fgets(buf, 50, fp);
+		strncpy(buf,x+17,10);
+		MIN_UP_DOWN = atof(buf);
 
 		fclose(fp);
 	}
