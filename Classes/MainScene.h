@@ -33,6 +33,8 @@ public:
 private:
 	int   b_gamestate;
 	float b_velocity;
+	bool  b_judge[3];
+	int   b_score;
 
 	void  initBird();
 	void  updateFloor();

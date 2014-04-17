@@ -120,7 +120,7 @@ bool MainWorld::init()
 	// logo
 	auto logo = Sprite::create(RES_BIRD_LOGO);
 	logo->setScale(scaleX,scaleY);
-	logo->setPosition(origin.x+visibleSize.width / 2, origin.y+bird->getPositionY()+bird->getContentSize().height*scaleY+ bird->getContentSize().height*scaleY);
+	logo->setPosition(origin.x+visibleSize.width / 2, origin.y+bird->getPositionY()+bird->getContentSize().height*scaleY+ bird->getContentSize().height*scaleY*2);
 	logo->setTag(TAG_LOGO);
 	this->addChild(logo, 1);
 
@@ -139,6 +139,17 @@ bool MainWorld::init()
 		pipelines_up[i]->setAnchorPoint(Point::ZERO);
 		this->addChild(pipelines_up[i], 1);
 	}
+
+	// score
+	//auto score = LabelBMFont::create("0", "fonts/futura-48.fnt");
+	auto score = Label::createWithBMFont("fonts/futura-48.fnt", "0");
+	score->setPosition(origin.x+visibleSize.width / 2, origin.y+visibleSize.height*8 /9);
+	score->setScaleX(scaleX);
+	score->setScaleY(scaleY);
+	score->enableShadow(Color4B::BLACK,Size(2,-2),0);
+	this->addChild(score, 3);
+	score->setVisible(false);
+	score->setTag(TAG_SCORE);
 
 	// update 
 	scheduleUpdate();
@@ -165,6 +176,11 @@ void MainWorld::initBird()
 	an->setLoops(-1);
 	Animate* anim = Animate::create(an);
 	bird->runAction(anim);
+
+	b_judge[0]=false;
+	b_judge[1]=false;
+	b_judge[2]=false;
+	b_score = 0;
 }
 
 void MainWorld::gameNoice(Ref* pSender)
@@ -174,7 +190,11 @@ void MainWorld::gameNoice(Ref* pSender)
 
 void MainWorld::gameTouch(Ref* pSender)
 {
+	Size visibleSize = Director::getInstance()->getVisibleSize();
+	Point origin = Director::getInstance()->getVisibleOrigin();
 	setStartMenuVisiable(false);
+	this->getChildByTag(TAG_SCORE)->setVisible(true);
+	this->getChildByTag(TAG_BIRD)->setPositionX(origin.x+visibleSize.width/4);
 	this->b_gamestate = GAME_STATUS_READY;
 	auto action = Sequence::create(DelayTime::create(2.0f),										
 		CallFunc::create(
@@ -279,6 +299,7 @@ void MainWorld::updatePipelines()
 {
 	Size visibleSize = Director::getInstance()->getVisibleSize();
 	Point origin = Director::getInstance()->getVisibleOrigin();
+	auto bird = this->getChildByTag(TAG_BIRD);
 	for(int i=0;i<3;i++)
 	{
 		auto x = pipelines_up[i]->getPositionX();
@@ -292,8 +313,20 @@ void MainWorld::updatePipelines()
 			pipelines_up[i]->setPosition(f_x+MIN_LEFT_RIGHT, origin.y+y+MIN_UP_DOWN);
 			pipelines_down[i]->setVisible(false);
 			pipelines_up[i]->setVisible(false);
+			b_judge[i] = false;
 			continue;
 		}
+		auto w2 = (w/2)+(bird->getContentSize().width*bird->getScaleX())/2;
+		if(x <= (bird->getPositionX() - w2) && !b_judge[i])
+		{
+			b_judge[i] = true;
+			++b_score;
+			//log("score: %d", b_score);
+			auto scoreSprite = (Label*)this->getChildByTag(TAG_SCORE);
+			Value s(b_score);
+			scoreSprite->setString(s.getDescription());
+		}
+
 		pipelines_up[i]->setPositionX(x - FLOOR_SPEED);
 		pipelines_down[i]->setPositionX(x - FLOOR_SPEED);
 		if(x - FLOOR_SPEED <= visibleSize.width && !pipelines_up[i]->isVisible())
@@ -308,8 +341,8 @@ float MainWorld::randh()
 {
 	auto floor_1 = this->getChildByTag(TAG_FLOOR_1);
 	auto floor_h = floor_1->getContentSize().height*(floor_1->getScaleY());
-	auto min_y = floor_h + (MIN_UP_DOWN/4);
-	auto max_y = Director::getInstance()->getVisibleSize().height - (MIN_UP_DOWN*5/4);
+	auto min_y = floor_h + (MIN_UP_DOWN/2);
+	auto max_y = Director::getInstance()->getVisibleSize().height - (MIN_UP_DOWN*6/4);
 	auto y = CCRANDOM_0_1()*(max_y - min_y) + min_y;
 	int count = 0;
 	while(abs((int)y - (int)dis)<=MIN_DIS && abs((int)y - (int)dis)>=MAX_DIS && count<=10)
@@ -370,6 +403,9 @@ void MainWorld::updateBird()
 	}
 	else
 	{
+		auto range = bird->getRotation();
+		if(range<30)
+			bird->setRotation(++range);
 		b_velocity -= BIRD_GRAVITY;
 		bird->setPositionY(bird->getPositionY() + b_velocity);
 	}
@@ -380,6 +416,7 @@ void MainWorld::onTouchesBegan(const vector<Touch*>& touches, Event* event)
 //	log("%s","touch began");
 	if(b_gamestate == GAME_STATUS_READY || b_gamestate == GAME_STATUS_PLAYING)
 	{
+		this->getChildByTag(TAG_BIRD)->setRotation(-30);
 		b_velocity = BIRD_UP_VELOCITY;
 	}
 }

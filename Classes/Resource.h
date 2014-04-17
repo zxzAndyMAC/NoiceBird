@@ -5,9 +5,9 @@
 //res
 #define RES_BIRD_BG       "bird/bird_bg.png"
 #define RES_BIRD_LOGO     "bird/bird_logo.png"
-#define RES_BIRD_BIRD     "bird/bird_hero.png"
-#define RES_BIRD_BIRD1    "bird/bird_hero2.png"
-#define RES_BIRD_BIRD2    "bird/bird_hero3.png"
+#define RES_BIRD_BIRD     "bird/bird_1_1.png"
+#define RES_BIRD_BIRD1    "bird/bird_1_2.png"
+#define RES_BIRD_BIRD2    "bird/bird_1_3.png"
 #define RES_BIRD_VOICE    "bird/bird_noice.png"
 #define RES_BIRD_VOICEP   "bird/bird_noice_pressed.png"
 #define RES_BIRD_TOUCH    "bird/bird_touch.png"
@@ -28,6 +28,7 @@
 #define TAG_RANK_BTN	1005
 #define TAG_RATE_BTN    1006
 #define TAG_TOUCH_BTN   1007
+#define TAG_SCORE       1008
 
 //states
 #define GAME_STATUS_START      10
