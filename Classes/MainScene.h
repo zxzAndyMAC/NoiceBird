@@ -40,6 +40,7 @@ private:
 	void  updateFloor();
 	void  updatePipelines();
 	void  updateBird();
+	void  gameready();
 	void  checkCollision();
 	void  setStartMenuVisiable(bool isVisiable);
 	float randh();

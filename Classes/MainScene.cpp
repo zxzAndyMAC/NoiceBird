@@ -9,6 +9,17 @@ USING_NS_CC;
 
 static float dis = 0.0f;
 
+static void setEnableRecursiveCascading(Node* node, bool enable)
+{
+	node->setCascadeColorEnabled(enable);
+	node->setCascadeOpacityEnabled(enable);
+
+	auto& children = node->getChildren();
+	for(const auto &child : children) {
+		setEnableRecursiveCascading(child, enable);
+	}
+}
+
 Scene* MainWorld::createScene()
 {
     // 'scene' is an autorelease object
@@ -16,7 +27,6 @@ Scene* MainWorld::createScene()
     
     // 'layer' is an autorelease object
     auto layer = MainWorld::create();
-
     // add layer as a child to scene
     scene->addChild(layer);
 
@@ -110,7 +120,7 @@ bool MainWorld::init()
 	this->addChild(menu3, 2);
 
 	// bird
-	auto bird = Sprite::create(RES_BIRD_BIRD);
+	auto bird = Sprite::create(RES_BIRD_BIRD_1_1);
 	bird->setScale(scaleX,scaleY);
 	bird->setPosition(origin.x+visibleSize.width / 2, origin.y+rateBtn->getPositionY()+rateBtn->getContentSize().height*scaleY+ rateBtn->getContentSize().height*scaleY/2);
 	bird->setTag(TAG_BIRD);
@@ -141,15 +151,31 @@ bool MainWorld::init()
 	}
 
 	// score
-	//auto score = LabelBMFont::create("0", "fonts/futura-48.fnt");
-	auto score = Label::createWithBMFont("fonts/futura-48.fnt", "0");
+	//auto score = Label::createWithBMFont("fonts/futura-48.fnt", "0");
+	TTFConfig config("fonts/voltergoldfish.ttf",40);
+	auto score = Label::createWithTTF(config,"0",TextHAlignment::LEFT);
 	score->setPosition(origin.x+visibleSize.width / 2, origin.y+visibleSize.height*8 /9);
 	score->setScaleX(scaleX);
 	score->setScaleY(scaleY);
+	score->setColor(Color3B::ORANGE);
+	score->setAnchorPoint(Point::ANCHOR_MIDDLE);
 	score->enableShadow(Color4B::BLACK,Size(2,-2),0);
 	this->addChild(score, 3);
 	score->setVisible(false);
 	score->setTag(TAG_SCORE);
+
+	//tap
+	auto tapsprite = Sprite::create(RES_BIRD_TAP);
+	tapsprite->setScale(scaleX,scaleY);
+	tapsprite->setPosition(origin.x+visibleSize.width/2, origin.y+visibleSize.height/2);
+	tapsprite->setVisible(false);
+	tapsprite->setTag(TAG_TAP);
+	this->addChild(tapsprite, 3);
+
+	auto layer = LayerColor::create(Color4B(0,0,0,0));
+	layer->setTag(TAG_COLOR);
+	layer->setVisible(false);
+	this->addChild(layer, 4);
 
 	// update 
 	scheduleUpdate();
@@ -160,7 +186,7 @@ bool MainWorld::init()
 	listener->onTouchesEnded = CC_CALLBACK_2(MainWorld::onTouchesEnded, this);
 	listener->onTouchesBegan = CC_CALLBACK_2(MainWorld::onTouchesBegan, this);
 	dispatcher->addEventListenerWithSceneGraphPriority(listener, this);
-
+	
     return true;
 }
 
@@ -168,10 +194,32 @@ void MainWorld::initBird()
 {
 	auto bird  = this->getChildByTag(TAG_BIRD);
 	bird->setRotation(0);
+	int i = rand()%4 + 1;
 	Animation* an = Animation::create();
-	an->addSpriteFrameWithFile(RES_BIRD_BIRD);
-	an->addSpriteFrameWithFile(RES_BIRD_BIRD1);
-	an->addSpriteFrameWithFile(RES_BIRD_BIRD2);
+	if(1 == i)
+	{
+		an->addSpriteFrameWithFile(BIRD_RAND(1, 1));
+		an->addSpriteFrameWithFile(BIRD_RAND(1, 2));
+		an->addSpriteFrameWithFile(BIRD_RAND(1, 3));
+	}
+	else if(2 == i)
+	{
+		an->addSpriteFrameWithFile(BIRD_RAND(2, 1));
+		an->addSpriteFrameWithFile(BIRD_RAND(2, 2));
+		an->addSpriteFrameWithFile(BIRD_RAND(2, 3));
+	}
+	else if(3 == i)
+	{
+		an->addSpriteFrameWithFile(BIRD_RAND(3, 1));
+		an->addSpriteFrameWithFile(BIRD_RAND(3, 2));
+		an->addSpriteFrameWithFile(BIRD_RAND(3, 3));
+	}
+	else
+	{
+		an->addSpriteFrameWithFile(BIRD_RAND(4, 1));
+		an->addSpriteFrameWithFile(BIRD_RAND(4, 2));
+		an->addSpriteFrameWithFile(BIRD_RAND(4, 3));
+	}
 	an->setDelayPerUnit(BIRD_ANIM_S);
 	an->setLoops(-1);
 	Animate* anim = Animate::create(an);
@@ -181,6 +229,15 @@ void MainWorld::initBird()
 	b_judge[1]=false;
 	b_judge[2]=false;
 	b_score = 0;
+
+	if(b_gamestate == GAME_STATUS_READY || b_gamestate == GAME_STATUS_START)
+	{
+		auto a = MoveBy::create(0.5, Point(0,20));
+		auto b = a->reverse();
+		auto action = RepeatForever::create(Sequence::create(a,b,NULL));
+		action->setTag(TAG_FLY);
+		bird->runAction(action);
+	}
 }
 
 void MainWorld::gameNoice(Ref* pSender)
@@ -190,11 +247,35 @@ void MainWorld::gameNoice(Ref* pSender)
 
 void MainWorld::gameTouch(Ref* pSender)
 {
+	auto action1 = FadeTo::create(0.5f,255);
+	auto action2 = FadeTo::create(0.5f, 0);
+	auto action = Sequence::create(action1, 
+		CallFunc::create([&](){
+			Size visibleSize = Director::getInstance()->getVisibleSize();
+			Point origin = Director::getInstance()->getVisibleOrigin();
+			this->getChildByTag(TAG_BIRD)->setPositionX(origin.x+visibleSize.width/4);
+			this->getChildByTag(TAG_BIRD)->stopActionByTag(TAG_FLY);
+			setStartMenuVisiable(false);
+			this->getChildByTag(TAG_TAP)->setVisible(true);
+			this->getChildByTag(TAG_SCORE)->setVisible(true);
+			this->b_gamestate = GAME_STATUS_PRE;
+	}),action2,CallFunc::create([&](){
+		auto layer = this->getChildByTag(TAG_COLOR);
+		layer->setVisible(false);
+	}) ,NULL);
+
+	auto layer = this->getChildByTag(TAG_COLOR);
+	layer->setOpacity(0);
+	layer->setVisible(true);
+	layer->runAction(action);
+}
+
+void MainWorld::gameready()
+{
 	Size visibleSize = Director::getInstance()->getVisibleSize();
 	Point origin = Director::getInstance()->getVisibleOrigin();
-	setStartMenuVisiable(false);
-	this->getChildByTag(TAG_SCORE)->setVisible(true);
-	this->getChildByTag(TAG_BIRD)->setPositionX(origin.x+visibleSize.width/4);
+	
+	this->getChildByTag(TAG_BIRD)->setPositionX(origin.x+visibleSize.width/4);	
 	this->b_gamestate = GAME_STATUS_READY;
 	auto action = Sequence::create(DelayTime::create(2.0f),										
 		CallFunc::create(
@@ -251,16 +332,20 @@ void MainWorld::update(float time)
 	case GAME_STATUS_START:
 		updateFloor();
 		break;
-	case GAME_STATUS_READY:
-		checkCollision();
+	case GAME_STATUS_PRE:
 		updateFloor();
 		updateBird();
 		break;
-	case GAME_STATUS_PLAYING:
+	case GAME_STATUS_READY:
+		updateFloor();
+		updateBird();
 		checkCollision();
+		break;
+	case GAME_STATUS_PLAYING:
 		updateFloor();
 		updatePipelines();
 		updateBird();
+		checkCollision();
 		break;
 	case GAME_STATUS_GAME_OVER:
 		updateBird();
@@ -325,6 +410,8 @@ void MainWorld::updatePipelines()
 			auto scoreSprite = (Label*)this->getChildByTag(TAG_SCORE);
 			Value s(b_score);
 			scoreSprite->setString(s.getDescription());
+			if(1 == b_score)
+				scoreSprite->setPositionY(scoreSprite->getPositionY()+30);
 		}
 
 		pipelines_up[i]->setPositionX(x - FLOOR_SPEED);
@@ -397,9 +484,13 @@ void MainWorld::updateBird()
 		}
 		else
 		{
-			bird->setPositionY(y_f + h);
+			bird->setPositionY(y_f);
 			this->b_gamestate = GAME_STATUS_GAME_END;
 		}
+	}
+	else if(b_gamestate == GAME_STATUS_PRE)
+	{
+
 	}
 	else
 	{
@@ -418,6 +509,11 @@ void MainWorld::onTouchesBegan(const vector<Touch*>& touches, Event* event)
 	{
 		this->getChildByTag(TAG_BIRD)->setRotation(-30);
 		b_velocity = BIRD_UP_VELOCITY;
+	}
+	else if(b_gamestate == GAME_STATUS_PRE)
+	{
+		this->getChildByTag(TAG_TAP)->setVisible(false);
+		this->gameready();
 	}
 }
 
