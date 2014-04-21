@@ -35,6 +35,8 @@
 #define RES_BIRD_NEW      "bird/new.png"
 #define RES_GAME_OVER     "bird/bird_game_over.png"
 #define RES_SOUND_MODE    "bird/sound_mode.png"
+#define RES_SOUND_BANNER  "bird/sound_banner.png"
+#define RES_SOUND_BANNER_O  "bird/sound_banner_o.png"
 
 //TAG
 #define TAG_LOGO		1000
@@ -55,6 +57,7 @@
 #define TAG_BEST		1025
 #define TAG_OVER		1026
 #define TAG_SOUND		1027
+#define TAG_SOUND_BANNER 1028
 
 //states
 #define GAME_STATUS_START      10

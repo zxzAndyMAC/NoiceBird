@@ -229,6 +229,20 @@ bool MainWorld::init()
 	gameover->setVisible(false);
 	this->addChild(gameover,4);
 
+	//sound banner
+	auto sound_banner = Sprite::create(RES_SOUND_BANNER);
+	sound_banner->setScale(scaleX,scaleY);
+	sound_banner->setAnchorPoint(Point::ZERO);
+	sound_banner->setPosition(origin.x+50, origin.y+floor->getContentSize().height*floor->getScaleY()+50);
+	sound_banner->setTag(TAG_SOUND_BANNER);
+
+	auto s_b_o = Sprite::create(RES_SOUND_BANNER_O);
+	s_b_o->setAnchorPoint(Point::ZERO);
+	sound_banner->addChild(s_b_o);
+
+	sound_banner->setVisible(false);
+	this->addChild(sound_banner,4);
+
 	// update 
 	scheduleUpdate();
 
@@ -330,6 +344,7 @@ void MainWorld::initGame()
 			}
 			else
 			{
+				this->getChildByTag(TAG_SOUND_BANNER)->setVisible(true);
 				this->getChildByTag(TAG_SOUND)->setVisible(true);
 			}
 			this->getChildByTag(TAG_SCORE)->setVisible(true);
@@ -451,6 +466,16 @@ void MainWorld::update(float time)
 
 void MainWorld::gameOver()
 {
+	if (b_moode == MODE_TOUCH)
+	{
+		this->getChildByTag(TAG_TAP)->setVisible(false);
+	}
+	else
+	{
+		this->getChildByTag(TAG_SOUND_BANNER)->setVisible(false);
+		this->getChildByTag(TAG_SOUND)->setVisible(false);
+	}
+	
 	this->getChildByTag(TAG_SCORE)->setVisible(false);
 	this->getChildByTag(TAG_VOICE_BTN)->setVisible(true);
 	this->getChildByTag(TAG_RATE_BTN)->setVisible(true);
