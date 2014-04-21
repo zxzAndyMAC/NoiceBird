@@ -1,5 +1,6 @@
 #include "MainScene.h"
 #include "Resource.h"
+#include "Sound.h"
 
 #ifdef BIRD_DEBUG
 #include "FileR.h"
@@ -48,6 +49,8 @@ bool MainWorld::init()
 	FileR::ReadConfig();
 #endif // BIRD_DEBUG
 
+	Sound::getInstance()->setDispatcher(this);
+
 	srand ((unsigned)time(NULL));
 
     Size visibleSize = Director::getInstance()->getVisibleSize();
@@ -90,7 +93,7 @@ bool MainWorld::init()
 	auto menu = Menu::create(startBtn, NULL);
 	menu->setPosition(Point::ZERO);
 	menu->setTag(TAG_VOICE_BTN);
-	this->addChild(menu, 2);
+	this->addChild(menu, 4);
 
 	//touch btn
 	auto touchBtn = MenuItemImage::create(RES_BIRD_TOUCH, RES_BIRD_TOUCHP, CC_CALLBACK_1(MainWorld::gameTouch, this));
@@ -99,7 +102,7 @@ bool MainWorld::init()
 	auto menu2 = Menu::create(touchBtn, NULL);
 	menu2->setPosition(Point::ZERO);
 	menu2->setTag(TAG_TOUCH_BTN);
-	this->addChild(menu2, 2);
+	this->addChild(menu2, 4);
 
 	//rank btn
 	auto rankBtn = MenuItemImage::create(RES_BIRD_RANK, RES_BIRD_RANKP, CC_CALLBACK_1(MainWorld::gameRank, this));
@@ -108,24 +111,25 @@ bool MainWorld::init()
 	auto menu4 = Menu::create(rankBtn, NULL);
 	menu4->setPosition(Point::ZERO);
 	menu4->setTag(TAG_RANK_BTN);
-	this->addChild(menu4, 2);
+	this->addChild(menu4, 4);
 
 	//rate Btn
 	auto rateBtn = MenuItemImage::create(RES_BIRD_RATE, RES_BIRD_RATE, CC_CALLBACK_1(MainWorld::gameRate, this));
 	rateBtn->setScale(scaleX,scaleY);
-	rateBtn->setPosition(origin.x+visibleSize.width / 2, origin.y + rankBtn->getPositionY() + rateBtn->getContentSize().height*scaleY + rankBtn->getContentSize().height*scaleY/2);
+	rateBtn->setPosition(origin.x+visibleSize.width / 2, origin.y + rankBtn->getPositionY() + rateBtn->getContentSize().height*scaleY*1.5);
 	auto menu3 = Menu::create(rateBtn, NULL);
 	menu3->setPosition(Point::ZERO);
 	menu3->setTag(TAG_RATE_BTN);
-	this->addChild(menu3, 2);
+	this->addChild(menu3, 4);
 
 	// bird
 	auto bird = Sprite::create(RES_BIRD_BIRD_1_1);
 	bird->setScale(scaleX,scaleY);
-	bird->setPosition(origin.x+visibleSize.width / 2, origin.y+rateBtn->getPositionY()+rateBtn->getContentSize().height*scaleY+ rateBtn->getContentSize().height*scaleY/2);
+	b_y = origin.y+rateBtn->getPositionY()+rateBtn->getContentSize().height*scaleY+ rateBtn->getContentSize().height*scaleY/2;
+	bird->setPosition(origin.x+visibleSize.width / 2, b_y);
 	bird->setTag(TAG_BIRD);
 	this->addChild(bird, 2);
-	initBird();
+	
 
 	// logo
 	auto logo = Sprite::create(RES_BIRD_LOGO);
@@ -175,7 +179,55 @@ bool MainWorld::init()
 	auto layer = LayerColor::create(Color4B(0,0,0,0));
 	layer->setTag(TAG_COLOR);
 	layer->setVisible(false);
-	this->addChild(layer, 4);
+	this->addChild(layer, 5);
+
+	//sound mode
+	auto soundsprite = Sprite::create(RES_SOUND_MODE);
+	soundsprite->setScale(scaleX,scaleY);
+	soundsprite->setPosition(origin.x+visibleSize.width/2, origin.y+visibleSize.height/2);
+	soundsprite->setVisible(false);
+	soundsprite->setTag(TAG_SOUND);
+	this->addChild(soundsprite, 3);
+
+	//score result
+	auto score_result = Sprite::create(RES_BIRD_RESULT);
+	score_result->setScale(scaleX,scaleY);
+	score_result->setAnchorPoint(Point::ANCHOR_MIDDLE_BOTTOM);
+	score_result->setPosition(origin.x+visibleSize.width/2, rateBtn->getPositionY()+rateBtn->getContentSize().height);
+	score_result->setTag(TAG_RESULT);
+
+	auto score_1 = Label::createWithTTF(config,"0",TextHAlignment::LEFT);
+	score_1->enableShadow(Color4B::BLACK,Size(2,-2),0);
+	score_1->setPosition(score_result->getContentSize().width/2, score_result->getContentSize().height*6/8+5);
+	score_1->setTag(TAG_SCORE1);
+	score_result->addChild(score_1);
+
+	auto score_best = Label::createWithTTF(config,"0",TextHAlignment::LEFT);
+	score_best->enableShadow(Color4B::BLACK,Size(2,-2),0);
+	score_best->setPosition(score_result->getContentSize().width/2, score_best->getContentSize().height+10);
+	score_best->setTag(TAG_BEST);
+	score_result->addChild(score_best);
+
+	Value s(UserDefault::getInstance()->getIntegerForKey("score"));
+	score_best->setString(s.getDescription());
+
+	auto _new = Sprite::create(RES_BIRD_NEW);
+	_new->setAnchorPoint(Point::ZERO);
+	_new->setTag(TAG_NEW);
+	_new->setPosition(_new->getContentSize().width/2,_new->getContentSize().height*2);
+	_new->setVisible(false);
+	score_result->addChild(_new);
+	this->addChild(score_result, 4);
+	score_result->setVisible(false);
+
+	//gameover
+	auto gameover = Sprite::create(RES_GAME_OVER);
+	gameover->setScale(scaleX,scaleY);
+	gameover->setAnchorPoint(Point::ANCHOR_MIDDLE_TOP);
+	gameover->setPosition(origin.x+visibleSize.width/2,origin.y+visibleSize.height-10);
+	gameover->setTag(TAG_OVER);
+	gameover->setVisible(false);
+	this->addChild(gameover,4);
 
 	// update 
 	scheduleUpdate();
@@ -187,11 +239,17 @@ bool MainWorld::init()
 	listener->onTouchesBegan = CC_CALLBACK_2(MainWorld::onTouchesBegan, this);
 	dispatcher->addEventListenerWithSceneGraphPriority(listener, this);
 	
+	initBird();
     return true;
 }
 
 void MainWorld::initBird()
 {
+	b_score = 0;
+	auto scoreSprite = (Label*)this->getChildByTag(TAG_SCORE);
+	Value s(b_score);
+	scoreSprite->setString(s.getDescription());
+
 	auto bird  = this->getChildByTag(TAG_BIRD);
 	bird->setRotation(0);
 	int i = rand()%4 + 1;
@@ -240,23 +298,40 @@ void MainWorld::initBird()
 	}
 }
 
-void MainWorld::gameNoice(Ref* pSender)
-{
-
-}
-
-void MainWorld::gameTouch(Ref* pSender)
+void MainWorld::initGame()
 {
 	auto action1 = FadeTo::create(0.5f,255);
 	auto action2 = FadeTo::create(0.5f, 0);
+	if (this->b_gamestate == GAME_STATUS_GAME_END)
+	{
+		for (int i=0;i<3;++i)
+		{
+			pipelines_down[i]->setVisible(false);
+			pipelines_up[i]->setVisible(false);
+		}
+		this->setPipes();
+	}
+
 	auto action = Sequence::create(action1, 
 		CallFunc::create([&](){
 			Size visibleSize = Director::getInstance()->getVisibleSize();
 			Point origin = Director::getInstance()->getVisibleOrigin();
+			if(this->b_gamestate == GAME_STATUS_GAME_END)
+			{
+				this->initBird();
+				this->getChildByTag(TAG_BIRD)->setPositionY(b_y);
+			}
 			this->getChildByTag(TAG_BIRD)->setPositionX(origin.x+visibleSize.width/4);
 			this->getChildByTag(TAG_BIRD)->stopActionByTag(TAG_FLY);
 			setStartMenuVisiable(false);
-			this->getChildByTag(TAG_TAP)->setVisible(true);
+			if (b_moode == MODE_TOUCH)
+			{
+				this->getChildByTag(TAG_TAP)->setVisible(true);
+			}
+			else
+			{
+				this->getChildByTag(TAG_SOUND)->setVisible(true);
+			}
 			this->getChildByTag(TAG_SCORE)->setVisible(true);
 			this->b_gamestate = GAME_STATUS_PRE;
 	}),action2,CallFunc::create([&](){
@@ -268,6 +343,18 @@ void MainWorld::gameTouch(Ref* pSender)
 	layer->setOpacity(0);
 	layer->setVisible(true);
 	layer->runAction(action);
+}
+
+void MainWorld::gameNoice(Ref* pSender)
+{
+	b_moode = MODE_SOUND;
+	initGame();
+}
+
+void MainWorld::gameTouch(Ref* pSender)
+{
+	b_moode = MODE_TOUCH;
+	initGame();
 }
 
 void MainWorld::gameready()
@@ -285,25 +372,30 @@ void MainWorld::gameready()
 			this->b_gamestate = GAME_STATUS_PLAYING;
 			pipelines_up[0]->setVisible(true);
 			pipelines_down[0]->setVisible(true);
-			Size visibleSize = Director::getInstance()->getVisibleSize();
-			Point origin = Director::getInstance()->getVisibleOrigin();
-
-			auto y = randh();
-			auto h = pipelines_down[0]->getContentSize().height*pipelines_down[0]->getScaleY();
-			pipelines_down[0]->setPosition(origin.x + visibleSize.width, origin.y+y-h);
-			pipelines_up[0]->setPosition(origin.x + visibleSize.width, origin.y+y+MIN_UP_DOWN);
-
-			y = randh();
-			pipelines_down[1]->setPosition(origin.x + visibleSize.width + MIN_LEFT_RIGHT, origin.y+y-h);
-			pipelines_up[1]->setPosition(origin.x + visibleSize.width + MIN_LEFT_RIGHT, origin.y+y+MIN_UP_DOWN);
-
-			y = randh();
-
-			pipelines_down[2]->setPosition(origin.x + visibleSize.width + MIN_LEFT_RIGHT*2, origin.y+y-h);
-			pipelines_up[2]->setPosition(origin.x + visibleSize.width + MIN_LEFT_RIGHT*2, origin.y+y+MIN_UP_DOWN);
+			this->setPipes();
 	}),NULL);
 
 	this->runAction(action);
+}
+
+void MainWorld::setPipes()
+{
+	Size visibleSize = Director::getInstance()->getVisibleSize();
+	Point origin = Director::getInstance()->getVisibleOrigin();
+
+	auto y = randh();
+	auto h = pipelines_down[0]->getContentSize().height*pipelines_down[0]->getScaleY();
+	pipelines_down[0]->setPosition(origin.x + visibleSize.width, origin.y+y-h);
+	pipelines_up[0]->setPosition(origin.x + visibleSize.width, origin.y+y+MIN_UP_DOWN);
+
+	y = randh();
+	pipelines_down[1]->setPosition(origin.x + visibleSize.width + MIN_LEFT_RIGHT, origin.y+y-h);
+	pipelines_up[1]->setPosition(origin.x + visibleSize.width + MIN_LEFT_RIGHT, origin.y+y+MIN_UP_DOWN);
+
+	y = randh();
+
+	pipelines_down[2]->setPosition(origin.x + visibleSize.width + MIN_LEFT_RIGHT*2, origin.y+y-h);
+	pipelines_up[2]->setPosition(origin.x + visibleSize.width + MIN_LEFT_RIGHT*2, origin.y+y+MIN_UP_DOWN);
 }
 
 void MainWorld::setStartMenuVisiable(bool isVisiable)
@@ -313,6 +405,8 @@ void MainWorld::setStartMenuVisiable(bool isVisiable)
 	this->getChildByTag(TAG_RANK_BTN)->setVisible(isVisiable);
 	this->getChildByTag(TAG_RATE_BTN)->setVisible(isVisiable);
 	this->getChildByTag(TAG_LOGO)->setVisible(isVisiable);
+	this->getChildByTag(TAG_OVER)->setVisible(isVisiable);
+	this->getChildByTag(TAG_RESULT)->setVisible(isVisiable);
 }
 
 void MainWorld::gameRate(Ref* pSender)
@@ -352,6 +446,31 @@ void MainWorld::update(float time)
 		break;
 	case GAME_STATUS_GAME_END:
 		break;
+	}
+}
+
+void MainWorld::gameOver()
+{
+	this->getChildByTag(TAG_SCORE)->setVisible(false);
+	this->getChildByTag(TAG_VOICE_BTN)->setVisible(true);
+	this->getChildByTag(TAG_RATE_BTN)->setVisible(true);
+	this->getChildByTag(TAG_RANK_BTN)->setVisible(true);
+	auto result = this->getChildByTag(TAG_RESULT);
+	result->setVisible(true);
+	this->getChildByTag(TAG_TOUCH_BTN)->setVisible(true);
+	this->getChildByTag(TAG_OVER)->setVisible(true);
+	result->getChildByTag(TAG_NEW)->setVisible(false);
+	auto sc = (Label*)result->getChildByTag(TAG_SCORE1);
+	Value s(b_score);
+	sc->setString(s.getDescription());
+
+	int score = UserDefault::getInstance()->getIntegerForKey("score");
+	if(b_score>score)
+	{
+		UserDefault::getInstance()->setIntegerForKey("score",b_score);
+		result->getChildByTag(TAG_NEW)->setVisible(true);
+		auto scb = (Label*)result->getChildByTag(TAG_BEST);
+		scb->setString(s.getDescription());
 	}
 }
 
@@ -410,8 +529,8 @@ void MainWorld::updatePipelines()
 			auto scoreSprite = (Label*)this->getChildByTag(TAG_SCORE);
 			Value s(b_score);
 			scoreSprite->setString(s.getDescription());
-			if(1 == b_score)
-				scoreSprite->setPositionY(scoreSprite->getPositionY()+30);
+			//if(1 == b_score)
+			//	scoreSprite->setPositionY(scoreSprite->getPositionY()+30);
 		}
 
 		pipelines_up[i]->setPositionX(x - FLOOR_SPEED);
@@ -486,6 +605,8 @@ void MainWorld::updateBird()
 		{
 			bird->setPositionY(y_f);
 			this->b_gamestate = GAME_STATUS_GAME_END;
+			b_velocity  =  BIRD_VELOCITY;
+			gameOver();
 		}
 	}
 	else if(b_gamestate == GAME_STATUS_PRE)
@@ -507,11 +628,13 @@ void MainWorld::onTouchesBegan(const vector<Touch*>& touches, Event* event)
 //	log("%s","touch began");
 	if(b_gamestate == GAME_STATUS_READY || b_gamestate == GAME_STATUS_PLAYING)
 	{
+		if(b_moode != MODE_TOUCH) return;
 		this->getChildByTag(TAG_BIRD)->setRotation(-30);
 		b_velocity = BIRD_UP_VELOCITY;
 	}
 	else if(b_gamestate == GAME_STATUS_PRE)
 	{
+		if(b_moode != MODE_TOUCH) return;
 		this->getChildByTag(TAG_TAP)->setVisible(false);
 		this->gameready();
 	}
@@ -520,4 +643,10 @@ void MainWorld::onTouchesBegan(const vector<Touch*>& touches, Event* event)
 void MainWorld::onTouchesEnded(const vector<Touch*>& touches, Event* event)
 {
 //	log("%s","touch end");
+}
+
+
+void MainWorld::SoundeHandler()
+{
+
 }

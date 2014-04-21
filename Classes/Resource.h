@@ -31,6 +31,10 @@
 #define	RES_BIRD_OBD      "bird/obstacle_down.png"
 #define	RES_BIRD_OBU      "bird/obstacle_up.png"
 #define RES_BIRD_TAP      "bird/bird_tap.png"
+#define RES_BIRD_RESULT   "bird/scorebest.png"
+#define RES_BIRD_NEW      "bird/new.png"
+#define RES_GAME_OVER     "bird/bird_game_over.png"
+#define RES_SOUND_MODE    "bird/sound_mode.png"
 
 //TAG
 #define TAG_LOGO		1000
@@ -45,6 +49,12 @@
 #define TAG_FLY         1009
 #define TAG_TAP         1010
 #define TAG_COLOR       1011
+#define TAG_RESULT      1022
+#define TAG_NEW			1023
+#define TAG_SCORE1      1024
+#define TAG_BEST		1025
+#define TAG_OVER		1026
+#define TAG_SOUND		1027
 
 //states
 #define GAME_STATUS_START      10
@@ -54,6 +64,9 @@
 #define GAME_STATUS_RESTART    50
 #define GAME_STATUS_GAME_END   60
 #define GAME_STATUS_PRE        70
+
+#define MODE_TOUCH  2000
+#define MODE_SOUND  2001
 
 #ifdef BIRD_DEBUG
 //param

@@ -1,11 +1,12 @@
 #ifndef __HELLOWORLD_SCENE_H__
 #define __HELLOWORLD_SCENE_H__
 
+#include "SoundDispatcher.h"
 #include "cocos2d.h"
 USING_NS_CC;
 using namespace std;
 
-class MainWorld : public cocos2d::Layer
+class MainWorld : public cocos2d::Layer , SoundDispatcher
 {
 public:
     // there's no 'id' in cpp, so we recommend returning the class instance pointer
@@ -31,10 +32,14 @@ public:
 	Sprite *pipelines_up[3];
 
 private:
+	void  SoundeHandler() override;
+
 	int   b_gamestate;
 	float b_velocity;
 	bool  b_judge[3];
 	int   b_score;
+	float b_y;
+	int   b_moode;
 
 	void  initBird();
 	void  updateFloor();
@@ -42,8 +47,11 @@ private:
 	void  updateBird();
 	void  gameready();
 	void  checkCollision();
+	void  gameOver();
 	void  setStartMenuVisiable(bool isVisiable);
 	float randh();
+	void  setPipes();
+	void  initGame();
 };
 
 #endif // __HELLOWORLD_SCENE_H__
