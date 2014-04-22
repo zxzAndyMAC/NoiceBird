@@ -2,6 +2,11 @@
 #include "Resource.h"
 #include "Sound.h"
 
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
+#include "BirdJni.h"
+#endif // Android
+
+
 #ifdef BIRD_DEBUG
 #include "FileR.h"
 #endif
@@ -28,6 +33,7 @@ Scene* MainWorld::createScene()
     
     // 'layer' is an autorelease object
     auto layer = MainWorld::create();
+	
     // add layer as a child to scene
     scene->addChild(layer);
 
@@ -61,6 +67,7 @@ bool MainWorld::init()
 
 	b_gamestate = GAME_STATUS_START;
 	b_velocity  =  BIRD_VELOCITY;
+	b_sound = 0.0f;
 
 	// game bg
 	auto bg = Sprite::create(RES_BIRD_BG);
@@ -230,15 +237,21 @@ bool MainWorld::init()
 	this->addChild(gameover,4);
 
 	//sound banner
-	auto sound_banner = Sprite::create(RES_SOUND_BANNER);
+	auto sound_banner = Sprite::create(RES_SOUND_BANNER_O);
 	sound_banner->setScale(scaleX,scaleY);
 	sound_banner->setAnchorPoint(Point::ZERO);
 	sound_banner->setPosition(origin.x+50, origin.y+floor->getContentSize().height*floor->getScaleY()+50);
 	sound_banner->setTag(TAG_SOUND_BANNER);
 
-	auto s_b_o = Sprite::create(RES_SOUND_BANNER_O);
+	auto s_b_o = Sprite::create(RES_SOUND_BANNER);
+	s_b_o->setTag(TAG_SOUND_BANNER_O);
 	s_b_o->setAnchorPoint(Point::ZERO);
-	sound_banner->addChild(s_b_o);
+	
+	//Rect textureRect = s_b_o->getTextureRect();
+	//textureRect = Rect(textureRect.origin.x,textureRect.origin.y,textureRect.size.width,50);
+	//s_b_o->setTextureRect(textureRect,s_b_o->isTextureRectRotated(),textureRect.size);
+
+	sound_banner->addChild(s_b_o,-1);
 
 	sound_banner->setVisible(false);
 	this->addChild(sound_banner,4);
@@ -363,6 +376,9 @@ void MainWorld::initGame()
 void MainWorld::gameNoice(Ref* pSender)
 {
 	b_moode = MODE_SOUND;
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
+	startRecord();
+#endif
 	initGame();
 }
 
@@ -474,6 +490,9 @@ void MainWorld::gameOver()
 	{
 		this->getChildByTag(TAG_SOUND_BANNER)->setVisible(false);
 		this->getChildByTag(TAG_SOUND)->setVisible(false);
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
+		stopRecord();
+#endif
 	}
 	
 	this->getChildByTag(TAG_SCORE)->setVisible(false);
@@ -646,6 +665,26 @@ void MainWorld::updateBird()
 		b_velocity -= BIRD_GRAVITY;
 		bird->setPositionY(bird->getPositionY() + b_velocity);
 	}
+
+	if (b_moode == MODE_SOUND)
+	{
+		updateSoundBanner();
+	}
+	
+}
+
+void MainWorld::updateSoundBanner()
+{
+	if (b_sound>0)
+	{
+		auto b = (Sprite*)this->getChildByTag(TAG_SOUND_BANNER);
+		auto banner = (Sprite*)b->getChildByTag(TAG_SOUND_BANNER_O);
+		float height = b_sound-30.0f;
+		height = height>80 ? 80 : height;
+		Rect textureRect = banner->getTextureRect();
+		textureRect = Rect(textureRect.origin.x,textureRect.origin.y,textureRect.size.width,height);
+		banner->setTextureRect(textureRect,banner->isTextureRectRotated(),textureRect.size);
+	}
 }
 
 void MainWorld::onTouchesBegan(const vector<Touch*>& touches, Event* event)
@@ -671,7 +710,29 @@ void MainWorld::onTouchesEnded(const vector<Touch*>& touches, Event* event)
 }
 
 
-void MainWorld::SoundeHandler()
+void MainWorld::SoundeHandler(float db)
 {
+	log("sound: %f",db);
+	if(b_sound<=0)
+	{
+		b_sound = db;
+		return;
+	}
 
+	if(abs(db - b_sound)>MIN_DB)
+	{
+		if(b_gamestate == GAME_STATUS_READY || b_gamestate == GAME_STATUS_PLAYING)
+		{
+			if(b_moode == MODE_TOUCH) return;
+			this->getChildByTag(TAG_BIRD)->setRotation(-30);
+			b_velocity = BIRD_UP_VELOCITY;
+		}
+		else if(b_gamestate == GAME_STATUS_PRE)
+		{
+			if(b_moode == MODE_TOUCH) return;
+			this->getChildByTag(TAG_SOUND)->setVisible(false);
+			this->gameready();
+		}
+	}
+	b_sound = db;
 }

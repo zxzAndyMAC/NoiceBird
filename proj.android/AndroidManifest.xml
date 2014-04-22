@@ -11,15 +11,15 @@
                  android:icon="@drawable/icon">
 
 
-        <activity android:name="org.cocos2dx.cpp.AppActivity"
+        <activity android:name="com.origin.noicebird.AppActivity"
                   android:label="@string/app_name"
-                  android:screenOrientation="landscape"
+                  android:screenOrientation="portrait"
                   android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
                   android:configChanges="orientation">
 
             <!-- Tell NativeActivity the name of our .so -->
             <meta-data android:name="android.app.lib_name"
-                       android:value="cocos2dcpp" />
+                       android:value="bird" />
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -35,4 +35,5 @@
                       android:xlargeScreens="true"/>
 
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
 </manifest> 

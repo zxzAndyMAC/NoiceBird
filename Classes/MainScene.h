@@ -32,7 +32,7 @@ public:
 	Sprite *pipelines_up[3];
 
 private:
-	void  SoundeHandler() override;
+	void  SoundeHandler(float db) override;
 
 	int   b_gamestate;
 	float b_velocity;
@@ -40,8 +40,10 @@ private:
 	int   b_score;
 	float b_y;
 	int   b_moode;
+	float b_sound;
 
 	void  initBird();
+	void  updateSoundBanner();
 	void  updateFloor();
 	void  updatePipelines();
 	void  updateBird();

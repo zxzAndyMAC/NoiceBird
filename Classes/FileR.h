@@ -56,6 +56,10 @@ public:
 		strncpy(buf,x+17,10);
 		MIN_UP_DOWN = atof(buf);
 
+		x = fgets(buf, 50, fp);
+		strncpy(buf,x+17,10);
+		MIN_DB = atof(buf);
+
 		fclose(fp);
 	}
 };

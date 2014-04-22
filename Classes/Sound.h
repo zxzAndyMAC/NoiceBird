@@ -2,35 +2,37 @@
 #define __SOUND_BIRD__
 
 #include "SoundDispatcher.h"
-
-class Sound;
-
-static Sound* sound = NULL;
+#include "cocos2d.h"
+USING_NS_CC;
 
 class Sound
 {
 public:
-	inline static Sound* getInstance();
+	Sound():sd(NULL){};
+	static Sound* getInstance();
 	inline void setDispatcher(SoundDispatcher* sd);
-	inline void HandleSound();
+	inline void HandleSound(float db);
 private:
 	SoundDispatcher* sd;
 };
 
-Sound* Sound::getInstance()
+void Sound::HandleSound(float db)
 {
-	if(NULL == sound)
-		sound = new Sound();
-	return sound;
-}
-
-void Sound::HandleSound()
-{
-	this->sd->SoundeHandler();
+	if(NULL == this->sd)
+	{
+		log("%s","SoundDispatcher is NULL");
+		return;
+	}
+	this->sd->SoundeHandler(db);
 }
 
 void Sound::setDispatcher(SoundDispatcher* sd)
 {
+	if(NULL == sd)
+	{
+		log("%s", "SoundDispatcher can not be NULL!");
+		return;
+	}
 	this->sd = sd;
 }
 

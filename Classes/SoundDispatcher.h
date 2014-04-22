@@ -4,7 +4,7 @@
 class SoundDispatcher
 {
 public:
-	virtual void SoundeHandler() = 0;
+	virtual void SoundeHandler(float db) = 0;
 };
 
 #endif

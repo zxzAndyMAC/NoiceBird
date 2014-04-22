@@ -1,7 +1,9 @@
 #ifndef __BIRD_RES__
 #define __BIRD_RES__
 
+#ifdef WIN32
 #define BIRD_DEBUG 1
+#endif // WIN32
 
 #define BIRD_RAND(i, n) RES_BIRD_BIRD_##i##_##n
 
@@ -58,6 +60,7 @@
 #define TAG_OVER		1026
 #define TAG_SOUND		1027
 #define TAG_SOUND_BANNER 1028
+#define TAG_SOUND_BANNER_O 1029
 
 //states
 #define GAME_STATUS_START      10
@@ -82,6 +85,7 @@ static float BIRD_GRAVITY=0.5f;
 static float BIRD_VELOCITY=5;
 static float BIRD_UP_VELOCITY=10;
 static float MAX_DIS=200.0;
+static float MIN_DB = 10;
 #else
 //param
 #define FLOOR_SPEED      5
@@ -93,5 +97,6 @@ static float MAX_DIS=200.0;
 #define BIRD_VELOCITY    5
 #define BIRD_UP_VELOCITY 10
 #define MAX_DIS          200.0
+#define MIN_DB			 10
 #endif
 #endif
