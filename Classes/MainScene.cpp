@@ -683,7 +683,7 @@ void MainWorld::updateSoundBanner()
 		auto banner = (ProgressTimer*)b->getChildByTag(TAG_SOUND_BANNER_O);
 		float height = b_sound-30.0f;
 		height = height>80 ? 80 : height;
-        banner->setPercentage(height/80);
+        banner->setPercentage(height*100/80);
 //		Rect textureRect = banner->getTextureRect();
 //		textureRect = Rect(textureRect.origin.x,textureRect.origin.y,textureRect.size.width,height);
 //		banner->setTextureRect(textureRect,banner->isTextureRectRotated(),textureRect.size);
