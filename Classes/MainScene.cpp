@@ -247,9 +247,9 @@ bool MainWorld::init()
 	s_b_o->setTag(TAG_SOUND_BANNER_O);
 	s_b_o->setAnchorPoint(Point::ZERO);
 	
-	//Rect textureRect = s_b_o->getTextureRect();
-	//textureRect = Rect(textureRect.origin.x,textureRect.origin.y,textureRect.size.width,50);
-	//s_b_o->setTextureRect(textureRect,s_b_o->isTextureRectRotated(),textureRect.size);
+	Rect textureRect = s_b_o->getTextureRect();
+	textureRect = Rect(textureRect.origin.x,textureRect.origin.y,textureRect.size.width,50);
+	s_b_o->setTextureRect(textureRect,s_b_o->isTextureRectRotated(),textureRect.size);
 
 	sound_banner->addChild(s_b_o,-1);
 
@@ -668,7 +668,7 @@ void MainWorld::updateBird()
 
 	if (b_moode == MODE_SOUND)
 	{
-		updateSoundBanner();
+		//updateSoundBanner();
 	}
 	
 }
