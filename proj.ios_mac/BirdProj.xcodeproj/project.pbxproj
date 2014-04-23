@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		05992B7919076EC60061F90C /* Sound.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05992B7619076EC60061F90C /* Sound.cpp */; };
 		059DBFA818F79E260082639C /* bird in Resources */ = {isa = PBXBuildFile; fileRef = 059DBFA718F79E260082639C /* bird */; };
 		059DBFAC18F79E360082639C /* MainScene.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 059DBFA918F79E360082639C /* MainScene.cpp */; };
 		059DBFAE18F79F1C0082639C /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 059DBFAD18F79F1C0082639C /* UIKit.framework */; };
@@ -210,6 +211,9 @@
 
 /* Begin PBXFileReference section */
 		0529048218FF84FC0014E90A /* FileR.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FileR.h; path = ../Classes/FileR.h; sourceTree = "<group>"; };
+		05992B7619076EC60061F90C /* Sound.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Sound.cpp; path = ../Classes/Sound.cpp; sourceTree = "<group>"; };
+		05992B7719076EC60061F90C /* Sound.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Sound.h; path = ../Classes/Sound.h; sourceTree = "<group>"; };
+		05992B7819076EC60061F90C /* SoundDispatcher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SoundDispatcher.h; path = ../Classes/SoundDispatcher.h; sourceTree = "<group>"; };
 		059DBFA718F79E260082639C /* bird */ = {isa = PBXFileReference; lastKnownFileType = folder; path = bird; sourceTree = "<group>"; };
 		059DBFA918F79E360082639C /* MainScene.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MainScene.cpp; path = ../Classes/MainScene.cpp; sourceTree = "<group>"; };
 		059DBFAA18F79E360082639C /* MainScene.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MainScene.h; path = ../Classes/MainScene.h; sourceTree = "<group>"; };
@@ -330,6 +334,9 @@
 		15AA9C4015B7EC450033D6C2 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				05992B7619076EC60061F90C /* Sound.cpp */,
+				05992B7719076EC60061F90C /* Sound.h */,
+				05992B7819076EC60061F90C /* SoundDispatcher.h */,
 				0529048218FF84FC0014E90A /* FileR.h */,
 				059DBFA918F79E360082639C /* MainScene.cpp */,
 				059DBFAA18F79E360082639C /* MainScene.h */,
@@ -661,6 +668,7 @@
 				503AE10217EB989F00D1A890 /* RootViewController.mm in Sources */,
 				1AFAF8B716D35DE700DB1158 /* AppDelegate.cpp in Sources */,
 				503AE10117EB989F00D1A890 /* main.m in Sources */,
+				05992B7919076EC60061F90C /* Sound.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
