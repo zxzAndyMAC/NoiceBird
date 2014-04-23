@@ -243,15 +243,6 @@ bool MainWorld::init()
 	sound_banner->setPosition(origin.x+50, origin.y+floor->getContentSize().height*floor->getScaleY()+50);
 	sound_banner->setTag(TAG_SOUND_BANNER);
 
-<<<<<<< HEAD
-	auto s_b_o = Sprite::create(RES_SOUND_BANNER);
-	s_b_o->setTag(TAG_SOUND_BANNER_O);
-	s_b_o->setAnchorPoint(Point::ZERO);
-	
-	Rect textureRect = s_b_o->getTextureRect();
-	textureRect = Rect(textureRect.origin.x,textureRect.origin.y,textureRect.size.width,50);
-	s_b_o->setTextureRect(textureRect,s_b_o->isTextureRectRotated(),textureRect.size);
-=======
 //	auto s_b_o = Sprite::create(RES_SOUND_BANNER);
 //	s_b_o->setTag(TAG_SOUND_BANNER_O);
 //	s_b_o->setAnchorPoint(Point::ZERO);
@@ -260,8 +251,8 @@ bool MainWorld::init()
     s_b_o->setMidpoint(Point(0,0));
     s_b_o->setBarChangeRate(Point(0, 1));
     s_b_o->setAnchorPoint(Point::ZERO);
+	s_b_o->setTag(TAG_SOUND_BANNER_O);
     s_b_o->setPercentage(50);
->>>>>>> 4f70eabbc6a8c9e97e41ca02a67b1967594231de
 
 	sound_banner->addChild(s_b_o,-1);
 
@@ -680,7 +671,7 @@ void MainWorld::updateBird()
 
 	if (b_moode == MODE_SOUND)
 	{
-		//updateSoundBanner();
+		updateSoundBanner();
 	}
 	
 }
@@ -693,10 +684,7 @@ void MainWorld::updateSoundBanner()
 		auto banner = (ProgressTimer*)b->getChildByTag(TAG_SOUND_BANNER_O);
 		float height = b_sound-30.0f;
 		height = height>80 ? 80 : height;
-        banner->setPercentage(height/80);
-//		Rect textureRect = banner->getTextureRect();
-//		textureRect = Rect(textureRect.origin.x,textureRect.origin.y,textureRect.size.width,height);
-//		banner->setTextureRect(textureRect,banner->isTextureRectRotated(),textureRect.size);
+        banner->setPercentage(height*100/80);
 	}
 }
 
@@ -732,7 +720,7 @@ void MainWorld::SoundeHandler(float db)
 		return;
 	}
 
-	if(abs(db - b_sound)>MIN_DB)
+	if(abs(db - b_sound)>MIN_DB && db > b_sound)
 	{
 		if(b_gamestate == GAME_STATUS_READY || b_gamestate == GAME_STATUS_PLAYING)
 		{
