@@ -495,6 +495,7 @@ void MainWorld::gameOver()
 		this->getChildByTag(TAG_SOUND)->setVisible(false);
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
 		stopRecord();
+		b_sound = 0;
 #endif
 	}
 	
@@ -525,7 +526,7 @@ void MainWorld::checkCollision()
 {
 	Sprite* bird = (Sprite*)this->getChildByTag(TAG_BIRD);
 	Rect rect_o = bird->getBoundingBox();
-	Rect rect = Rect(rect_o.getMinX()+4, rect_o.getMinY()+4, bird->getContentSize().width*bird->getScaleX()-8,bird->getContentSize().height*bird->getScaleY()-8);
+	Rect rect = Rect(rect_o.getMinX()+4, rect_o.getMinY(), bird->getContentSize().width*bird->getScaleX()-8,bird->getContentSize().height*bird->getScaleY()-6);
 
 	bool ao_f = rect.intersectsRect(this->getChildByTag(TAG_FLOOR_1)->getBoundingBox());
 	bool ao_f2 = rect.intersectsRect(this->getChildByTag(TAG_FLOOR_2)->getBoundingBox());
@@ -682,7 +683,7 @@ void MainWorld::updateSoundBanner()
 	{
 		auto b = (Sprite*)this->getChildByTag(TAG_SOUND_BANNER);
 		auto banner = (ProgressTimer*)b->getChildByTag(TAG_SOUND_BANNER_O);
-		float height = b_sound-30.0f;
+		float height = b_sound-25.0f;
 		height = height>80 ? 80 : height;
         banner->setPercentage(height*100/80);
 	}
@@ -713,7 +714,7 @@ void MainWorld::onTouchesEnded(const vector<Touch*>& touches, Event* event)
 
 void MainWorld::SoundeHandler(float db)
 {
-	log("sound: %f",db);
+//	log("sound: %f",db);
 	if(b_sound<=0)
 	{
 		b_sound = db;

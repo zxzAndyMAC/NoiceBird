@@ -1,5 +1,7 @@
 package com.origin.jni;
 
+import android.util.Log;
+
 import com.origin.sound.RecordThread;
 
 public class jni {
@@ -13,6 +15,7 @@ public class jni {
 	
 	public static void startRecord()
 	{
+		Log.d("cocos2d-x debug info", "startRecord() java");
 		ifstarted = true;
 		if(null == sound)
 			sound = new RecordThread();
@@ -21,6 +24,9 @@ public class jni {
 	
 	public static void pauseRecord()
 	{
+		Log.d("cocos2d-x debug info", "pauseRecord() java");
+		if(null == sound)
+			return;
 		sound.pause();
 		sound = null;
 	}
