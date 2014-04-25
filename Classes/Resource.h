@@ -40,6 +40,17 @@
 #define RES_SOUND_BANNER  "bird/sound_banner.png"
 #define RES_SOUND_BANNER_O  "bird/sound_banner_o.png"
 
+//sound
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
+#define SOUND_FLY		  "sound_android/fly.ogg"
+#define SOUND_DEAD		  "sound_android/dead.ogg"
+#define SOUND_POINT       "sound_android/point.ogg"
+#else
+#define SOUND_FLY		  "sound_win_mac/fly.wav"
+#define SOUND_DEAD		  "sound_win_mac/dead.wav"
+#define SOUND_POINT       "sound_win_mac/point.wav"
+#endif
+
 //TAG
 #define TAG_LOGO		1000
 #define TAG_BIRD		1001

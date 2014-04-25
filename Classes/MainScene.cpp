@@ -1,6 +1,7 @@
 #include "MainScene.h"
 #include "Resource.h"
 #include "Sound.h"
+#include "SimpleAudioEngine.h"
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
 #include "BirdJni.h"
@@ -12,6 +13,7 @@
 #endif
 
 USING_NS_CC;
+using namespace CocosDenshion;
 
 static float dis = 0.0f;
 
@@ -39,6 +41,13 @@ Scene* MainWorld::createScene()
 
     // return the scene
     return scene;
+}
+
+MainWorld::~MainWorld()
+{
+	SimpleAudioEngine::getInstance()->unloadEffect(SOUND_FLY);
+	SimpleAudioEngine::getInstance()->unloadEffect(SOUND_DEAD);
+	SimpleAudioEngine::getInstance()->unloadEffect(SOUND_POINT);
 }
 
 // on "init" you need to initialize your instance
@@ -270,7 +279,16 @@ bool MainWorld::init()
 	dispatcher->addEventListenerWithSceneGraphPriority(listener, this);
 	
 	initBird();
+	preloadEffects();
     return true;
+}
+
+void MainWorld::preloadEffects()
+{
+	SimpleAudioEngine::getInstance()->preloadEffect(SOUND_FLY);
+	SimpleAudioEngine::getInstance()->preloadEffect(SOUND_DEAD);
+	SimpleAudioEngine::getInstance()->preloadEffect(SOUND_POINT);
+	SimpleAudioEngine::getInstance()->setEffectsVolume(1.0f);
 }
 
 void MainWorld::initBird()
@@ -380,6 +398,7 @@ void MainWorld::gameNoice(Ref* pSender)
 {
 	b_moode = MODE_SOUND;
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
+	setAdsVisible(false);
 	startRecord();
 #endif
 	initGame();
@@ -387,6 +406,9 @@ void MainWorld::gameNoice(Ref* pSender)
 
 void MainWorld::gameTouch(Ref* pSender)
 {
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
+	setAdsVisible(false);
+#endif
 	b_moode = MODE_TOUCH;
 	initGame();
 }
@@ -498,7 +520,9 @@ void MainWorld::gameOver()
 		b_sound = 0;
 #endif
 	}
-	
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
+	setAdsVisible(true);
+#endif
 	this->getChildByTag(TAG_SCORE)->setVisible(false);
 	this->getChildByTag(TAG_VOICE_BTN)->setVisible(true);
 	this->getChildByTag(TAG_RATE_BTN)->setVisible(true);
@@ -533,6 +557,7 @@ void MainWorld::checkCollision()
 	if(ao_f || ao_f2)
 	{
 		b_gamestate = GAME_STATUS_GAME_OVER;
+		SimpleAudioEngine::getInstance()->playEffect(SOUND_DEAD);
 		return;
 	}
 	for(int i=0;i<3;i++)
@@ -542,6 +567,7 @@ void MainWorld::checkCollision()
 		if(ao_u || ao_d)
 		{
 			b_gamestate = GAME_STATUS_GAME_OVER;
+			SimpleAudioEngine::getInstance()->playEffect(SOUND_DEAD);
 			break;
 		}
 	}
@@ -577,6 +603,7 @@ void MainWorld::updatePipelines()
 			auto scoreSprite = (Label*)this->getChildByTag(TAG_SCORE);
 			Value s(b_score);
 			scoreSprite->setString(s.getDescription());
+			SimpleAudioEngine::getInstance()->playEffect(SOUND_POINT);
 			//if(1 == b_score)
 			//	scoreSprite->setPositionY(scoreSprite->getPositionY()+30);
 		}
@@ -697,6 +724,7 @@ void MainWorld::onTouchesBegan(const vector<Touch*>& touches, Event* event)
 		if(b_moode != MODE_TOUCH) return;
 		this->getChildByTag(TAG_BIRD)->setRotation(-30);
 		b_velocity = BIRD_UP_VELOCITY;
+		SimpleAudioEngine::getInstance()->playEffect(SOUND_FLY);
 	}
 	else if(b_gamestate == GAME_STATUS_PRE)
 	{
@@ -728,6 +756,7 @@ void MainWorld::SoundeHandler(float db)
 			if(b_moode == MODE_TOUCH) return;
 			this->getChildByTag(TAG_BIRD)->setRotation(-30);
 			b_velocity = BIRD_UP_VELOCITY;
+			SimpleAudioEngine::getInstance()->playEffect(SOUND_FLY);
 		}
 		else if(b_gamestate == GAME_STATUS_PRE)
 		{

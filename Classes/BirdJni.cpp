@@ -42,4 +42,17 @@ extern "C"
 			t.env->DeleteLocalRef(t.classID);
 		}
 	}
+	
+	void setAdsVisible(bool i)
+	{
+		JniMethodInfo t;
+		if (JniHelper::getStaticMethodInfo(t,
+			"com/origin/jni/Ads",
+			"setVisible",
+			"(Z)V"))
+		{
+			t.env->CallStaticVoidMethod(t.classID, t.methodID, i);
+			t.env->DeleteLocalRef(t.classID);
+		}
+	}
 };

@@ -5,6 +5,8 @@ extern "C"
 {
 	extern void    startRecord();
 	extern void    stopRecord();
+	
+	extern void    setAdsVisible(bool i);
 };
 
 #endif

@@ -1,7 +1,6 @@
 package com.origin.jni;
 
 import android.util.Log;
-
 import com.origin.sound.RecordThread;
 
 public class jni {

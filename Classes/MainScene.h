@@ -9,6 +9,7 @@ using namespace std;
 class MainWorld : public cocos2d::Layer , SoundDispatcher
 {
 public:
+	~MainWorld();
     // there's no 'id' in cpp, so we recommend returning the class instance pointer
     static cocos2d::Scene* createScene();
 
@@ -54,6 +55,7 @@ private:
 	float randh();
 	void  setPipes();
 	void  initGame();
+	void  preloadEffects();
 };
 
 #endif // __HELLOWORLD_SCENE_H__

@@ -28,10 +28,25 @@ package com.origin.noicebird;
 
 import org.cocos2dx.lib.Cocos2dxActivity;
 
+import android.content.Intent;
+import android.os.Bundle;
+ 
+import com.inmobi.commons.InMobi;
+import com.inmobi.commons.InMobi.LOG_LEVEL;
+import com.origin.jni.google;
 import com.origin.jni.jni;
 
 
 public class AppActivity extends Cocos2dxActivity {
+
+	@Override
+	public void onCreate(Bundle savedInstanceState)
+	{
+		InMobi.initialize(this, "60fa9b8684bb40b0a77d624b1bf2dd05");
+		InMobi.setLogLevel(LOG_LEVEL.DEBUG);
+		super.onCreate(savedInstanceState);
+		google.initGoogle(this);
+	}
 	
 	@Override
 	public void onResume()
@@ -47,5 +62,17 @@ public class AppActivity extends Cocos2dxActivity {
 		super.onPause();
 		if(jni.ifstarted)
 			jni.pauseRecord();
+	}
+	
+	@Override
+	protected void onStop() {
+	    super.onStop();
+	    google.stop();
+	}
+
+	@Override
+	protected void onActivityResult(int request, int response, Intent data) {
+	    super.onActivityResult(request, response, data);
+	    google.onActivityResult(request, response, data);
 	}
 }

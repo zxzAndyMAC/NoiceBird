@@ -25,6 +25,9 @@ package org.cocos2dx.lib;
 
 import org.cocos2dx.lib.Cocos2dxHelper.Cocos2dxHelperListener;
 
+import com.inmobi.monetization.IMBanner;
+import com.origin.jni.Ads;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
@@ -156,9 +159,18 @@ public abstract class Cocos2dxActivity extends Activity implements Cocos2dxHelpe
 
         // Cocos2dxGLSurfaceView
         this.mGLSurfaceView = this.onCreateView();
-
+        
         // ...add to FrameLayout
         framelayout.addView(this.mGLSurfaceView);
+        
+        //IMBanner 
+        Ads.banner = new IMBanner(this, "60fa9b8684bb40b0a77d624b1bf2dd05" ,IMBanner.INMOBI_AD_UNIT_320X50);
+        final float scale = getResources().getDisplayMetrics().density;
+        int width = (int) (320 * scale + 0.5f);
+        int height = (int) (50 * scale + 0.5f);
+        Ads.banner.setLayoutParams(new ViewGroup.LayoutParams(width, height));
+        Ads.banner.setRefreshInterval(20);
+        framelayout.addView(Ads.banner);
 
         // Switch to supported OpenGL (ARGB888) mode on emulator
         if (isAndroidEmulator())
@@ -169,6 +181,8 @@ public abstract class Cocos2dxActivity extends Activity implements Cocos2dxHelpe
 
         // Set framelayout as the content view
 		setContentView(framelayout);
+		
+		Ads.banner.loadBanner();
 	}
 	
     public Cocos2dxGLSurfaceView onCreateView() {
