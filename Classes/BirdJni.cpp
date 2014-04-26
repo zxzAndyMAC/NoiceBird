@@ -17,6 +17,12 @@ extern "C"
 		Sound::getInstance()->HandleSound(_db);
 	}
 	
+	void Java_com_origin_jni_google_login(JNIEnv* env, jobject thiz, jboolean enable)
+	{
+		bool en = enable;
+		Sound::getInstance()->EnableLeaderBoard(en);
+	}
+	
 	void startRecord()
 	{
 		JniMethodInfo t;
@@ -52,6 +58,47 @@ extern "C"
 			"(Z)V"))
 		{
 			t.env->CallStaticVoidMethod(t.classID, t.methodID, i);
+			t.env->DeleteLocalRef(t.classID);
+		}
+	}
+	
+	bool startGoogle()
+	{
+		JniMethodInfo t;
+		if (JniHelper::getStaticMethodInfo(t,
+			"com/origin/jni/google",
+			"start",
+			"()Z"))
+		{
+			jboolean ret = t.env->CallStaticBooleanMethod(t.classID, t.methodID);
+			t.env->DeleteLocalRef(t.classID);
+			return ret;
+		}
+		return false;
+	}
+	
+	void submitScore(int score)
+	{
+		JniMethodInfo t;
+		if (JniHelper::getStaticMethodInfo(t,
+			"com/origin/jni/google",
+			"sumbit",
+			"(I)V"))
+		{
+			t.env->CallStaticVoidMethod(t.classID, t.methodID, score);
+			t.env->DeleteLocalRef(t.classID);
+		}
+	}
+	
+	void showGoogle()
+	{
+		JniMethodInfo t;
+		if (JniHelper::getStaticMethodInfo(t,
+			"com/origin/jni/google",
+			"show",
+			"()V"))
+		{
+			t.env->CallStaticVoidMethod(t.classID, t.methodID);
 			t.env->DeleteLocalRef(t.classID);
 		}
 	}

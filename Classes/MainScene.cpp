@@ -68,8 +68,41 @@ bool MainWorld::init()
 
 	srand ((unsigned)time(NULL));
 
-    Size visibleSize = Director::getInstance()->getVisibleSize();
-    Point origin = Director::getInstance()->getVisibleOrigin();
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
+	initRes();
+#else
+	Size visibleSize = Director::getInstance()->getVisibleSize();
+	Point origin = Director::getInstance()->getVisibleOrigin();
+
+	auto logo = Sprite::create(RES_LOGO_1);
+	logo->setPosition(origin.x+visibleSize.width/2,origin.y+visibleSize.height/2);
+	logo->setTag(TAG_LOGO_1);
+	this->addChild(logo,8);
+
+	auto shad = Sprite::create(RES_LOGO_2);
+	shad->setPosition(origin.x+visibleSize.width/2,origin.y+visibleSize.height/2);
+	shad->setOpacity(0);
+	shad->setTag(TAG_LOGO_2);
+	this->addChild(shad,7);
+
+	auto action1 = FadeTo::create(1.5f,255);
+	auto action2 = FadeTo::create(1.5f, 0);
+	auto action = Sequence::create(action1, action2 ,CallFunc::create([&](){
+		this->getChildByTag(TAG_LOGO_2)->setVisible(false);
+		this->getChildByTag(TAG_LOGO_1)->setVisible(false);
+		this->removeAllChildren();
+		this->initRes();
+	}),NULL);
+
+	shad->runAction(action);
+#endif
+    return true;
+}
+
+void MainWorld::initRes()
+{
+	Size visibleSize = Director::getInstance()->getVisibleSize();
+	Point origin = Director::getInstance()->getVisibleOrigin();
 
 	log("%f",visibleSize.width);
 	log("%f",visibleSize.height);
@@ -77,6 +110,8 @@ bool MainWorld::init()
 	b_gamestate = GAME_STATUS_START;
 	b_velocity  =  BIRD_VELOCITY;
 	b_sound = 0.0f;
+	b_floorspeed = FLOOR_SPEED;
+	//b_leaderbordenable = false;
 
 	// game bg
 	auto bg = Sprite::create(RES_BIRD_BG);
@@ -94,7 +129,7 @@ bool MainWorld::init()
 	floor->setPosition(origin.x,origin.y);
 	floor->setTag(TAG_FLOOR_1);
 	this->addChild(floor,3);
-    
+
 	auto floor2 = Sprite::create(RES_BIRD_FLOOR);
 	floor2->setScale(visibleSize.width / floor2->getContentSize().width, visibleSize.height/480);
 	floor2->setAnchorPoint(Point::ZERO);
@@ -145,7 +180,7 @@ bool MainWorld::init()
 	bird->setPosition(origin.x+visibleSize.width / 2, b_y);
 	bird->setTag(TAG_BIRD);
 	this->addChild(bird, 2);
-	
+
 
 	// logo
 	auto logo = Sprite::create(RES_BIRD_LOGO);
@@ -252,16 +287,16 @@ bool MainWorld::init()
 	sound_banner->setPosition(origin.x+50, origin.y+floor->getContentSize().height*floor->getScaleY()+50);
 	sound_banner->setTag(TAG_SOUND_BANNER);
 
-//	auto s_b_o = Sprite::create(RES_SOUND_BANNER);
-//	s_b_o->setTag(TAG_SOUND_BANNER_O);
-//	s_b_o->setAnchorPoint(Point::ZERO);
-    auto s_b_o = ProgressTimer::create(Sprite::create(RES_SOUND_BANNER));
-    s_b_o->setType(ProgressTimer::Type::BAR);
-    s_b_o->setMidpoint(Point(0,0));
-    s_b_o->setBarChangeRate(Point(0, 1));
-    s_b_o->setAnchorPoint(Point::ZERO);
+	//	auto s_b_o = Sprite::create(RES_SOUND_BANNER);
+	//	s_b_o->setTag(TAG_SOUND_BANNER_O);
+	//	s_b_o->setAnchorPoint(Point::ZERO);
+	auto s_b_o = ProgressTimer::create(Sprite::create(RES_SOUND_BANNER));
+	s_b_o->setType(ProgressTimer::Type::BAR);
+	s_b_o->setMidpoint(Point(0,0));
+	s_b_o->setBarChangeRate(Point(0, 1));
+	s_b_o->setAnchorPoint(Point::ZERO);
 	s_b_o->setTag(TAG_SOUND_BANNER_O);
-    s_b_o->setPercentage(50);
+	s_b_o->setPercentage(50);
 
 	sound_banner->addChild(s_b_o,-1);
 
@@ -277,10 +312,9 @@ bool MainWorld::init()
 	listener->onTouchesEnded = CC_CALLBACK_2(MainWorld::onTouchesEnded, this);
 	listener->onTouchesBegan = CC_CALLBACK_2(MainWorld::onTouchesBegan, this);
 	dispatcher->addEventListenerWithSceneGraphPriority(listener, this);
-	
+
 	initBird();
 	preloadEffects();
-    return true;
 }
 
 void MainWorld::preloadEffects()
@@ -397,6 +431,12 @@ void MainWorld::initGame()
 void MainWorld::gameNoice(Ref* pSender)
 {
 	b_moode = MODE_SOUND;
+
+	b_floorspeed = FLOOR_SPEED/2;
+	b_gravity = BIRD_GRAVITY/3;
+	b_minlr = MIN_LEFT_RIGHT*1.2;
+	b_maxdis = MAX_DIS-80;
+
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
 	setAdsVisible(false);
 	startRecord();
@@ -410,6 +450,12 @@ void MainWorld::gameTouch(Ref* pSender)
 	setAdsVisible(false);
 #endif
 	b_moode = MODE_TOUCH;
+
+	b_floorspeed = FLOOR_SPEED;
+	b_gravity = BIRD_GRAVITY;
+	b_minlr = MIN_LEFT_RIGHT;
+	b_maxdis = MAX_DIS;
+
 	initGame();
 }
 
@@ -445,13 +491,13 @@ void MainWorld::setPipes()
 	pipelines_up[0]->setPosition(origin.x + visibleSize.width, origin.y+y+MIN_UP_DOWN);
 
 	y = randh();
-	pipelines_down[1]->setPosition(origin.x + visibleSize.width + MIN_LEFT_RIGHT, origin.y+y-h);
-	pipelines_up[1]->setPosition(origin.x + visibleSize.width + MIN_LEFT_RIGHT, origin.y+y+MIN_UP_DOWN);
+	pipelines_down[1]->setPosition(origin.x + visibleSize.width + b_minlr, origin.y+y-h);
+	pipelines_up[1]->setPosition(origin.x + visibleSize.width + b_minlr, origin.y+y+MIN_UP_DOWN);
 
 	y = randh();
 
-	pipelines_down[2]->setPosition(origin.x + visibleSize.width + MIN_LEFT_RIGHT*2, origin.y+y-h);
-	pipelines_up[2]->setPosition(origin.x + visibleSize.width + MIN_LEFT_RIGHT*2, origin.y+y+MIN_UP_DOWN);
+	pipelines_down[2]->setPosition(origin.x + visibleSize.width + b_minlr*2, origin.y+y-h);
+	pipelines_up[2]->setPosition(origin.x + visibleSize.width + b_minlr*2, origin.y+y+MIN_UP_DOWN);
 }
 
 void MainWorld::setStartMenuVisiable(bool isVisiable)
@@ -472,7 +518,11 @@ void MainWorld::gameRate(Ref* pSender)
 
 void MainWorld::gameRank(Ref* pSender)
 {
-
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
+	bool enable = startGoogle();
+	if(enable)
+		showGoogle();
+#endif
 }
 
 void MainWorld::update(float time)
@@ -587,8 +637,8 @@ void MainWorld::updatePipelines()
 			auto y = randh();
 			auto h = pipelines_down[i]->getContentSize().height*pipelines_down[i]->getScaleY();
 			auto f_x = i==0 ? pipelines_up[2]->getPositionX() : pipelines_up[i-1]->getPositionX();
-			pipelines_down[i]->setPosition(f_x+MIN_LEFT_RIGHT, origin.y+y-h);
-			pipelines_up[i]->setPosition(f_x+MIN_LEFT_RIGHT, origin.y+y+MIN_UP_DOWN);
+			pipelines_down[i]->setPosition(f_x+b_minlr, origin.y+y-h);
+			pipelines_up[i]->setPosition(f_x+b_minlr, origin.y+y+MIN_UP_DOWN);
 			pipelines_down[i]->setVisible(false);
 			pipelines_up[i]->setVisible(false);
 			b_judge[i] = false;
@@ -608,9 +658,9 @@ void MainWorld::updatePipelines()
 			//	scoreSprite->setPositionY(scoreSprite->getPositionY()+30);
 		}
 
-		pipelines_up[i]->setPositionX(x - FLOOR_SPEED);
-		pipelines_down[i]->setPositionX(x - FLOOR_SPEED);
-		if(x - FLOOR_SPEED <= visibleSize.width && !pipelines_up[i]->isVisible())
+		pipelines_up[i]->setPositionX(x - b_floorspeed);
+		pipelines_down[i]->setPositionX(x - b_floorspeed);
+		if(x - b_floorspeed <= visibleSize.width && !pipelines_up[i]->isVisible())
 		{
 			pipelines_up[i]->setVisible(true);
 			pipelines_down[i]->setVisible(true);
@@ -626,7 +676,7 @@ float MainWorld::randh()
 	auto max_y = Director::getInstance()->getVisibleSize().height - (MIN_UP_DOWN*6/4);
 	auto y = CCRANDOM_0_1()*(max_y - min_y) + min_y;
 	int count = 0;
-	while(abs((int)y - (int)dis)<=MIN_DIS && abs((int)y - (int)dis)>=MAX_DIS && count<=10)
+	while(abs((int)y - (int)dis)<=MIN_DIS && abs((int)y - (int)dis)>=b_maxdis && count<=10)
 	{
 		y = CCRANDOM_0_1()*(max_y - min_y) + min_y;
 		++count;
@@ -647,13 +697,13 @@ void MainWorld::updateFloor()
 	if(floor_1_x<=-1*visibleSize.width)
 		floor_1->setPositionX(origin.x);
 	else
-		floor_1->setPositionX(floor_1_x-FLOOR_SPEED);
+		floor_1->setPositionX(floor_1_x-b_floorspeed);
 
 	auto floor_2_x = floor_2->getPositionX();
 	if(floor_2_x<=origin.x)
 		floor_2->setPositionX(origin.x+visibleSize.width);
 	else
-		floor_2->setPositionX(floor_2_x-FLOOR_SPEED);
+		floor_2->setPositionX(floor_2_x-b_floorspeed);
 }
 
 void MainWorld::updateBird()
@@ -693,7 +743,7 @@ void MainWorld::updateBird()
 		auto range = bird->getRotation();
 		if(range<30)
 			bird->setRotation(++range);
-		b_velocity -= BIRD_GRAVITY;
+		b_velocity -= b_gravity;
 		bird->setPositionY(bird->getPositionY() + b_velocity);
 	}
 
@@ -755,7 +805,7 @@ void MainWorld::SoundeHandler(float db)
 		{
 			if(b_moode == MODE_TOUCH) return;
 			this->getChildByTag(TAG_BIRD)->setRotation(-30);
-			b_velocity = BIRD_UP_VELOCITY;
+			b_velocity = BIRD_UP_VELOCITY/2;
 			SimpleAudioEngine::getInstance()->playEffect(SOUND_FLY);
 		}
 		else if(b_gamestate == GAME_STATUS_PRE)
@@ -766,4 +816,16 @@ void MainWorld::SoundeHandler(float db)
 		}
 	}
 	b_sound = db;
+}
+
+void MainWorld::LeaderBoardEnable(bool enable)
+{
+	if (enable)
+	{
+		int score = UserDefault::getInstance()->getIntegerForKey("score");
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
+		log("%s","submit score (cpp)");
+		submitScore(score);
+#endif
+	}
 }

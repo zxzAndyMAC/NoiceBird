@@ -1,7 +1,10 @@
 package com.origin.jni;
 
+import org.cocos2dx.lib.Cocos2dxHelper;
+
 import android.app.Activity;
 import android.content.Intent;
+import android.util.Log;
 
 import com.google.android.gms.games.Games;
 import com.google.example.games.basegameutils.GameHelper;
@@ -23,10 +26,13 @@ public class google {
 	            // handle sign-in succeess
 	        	isShow = true;
 	        	login(true);
+	        	show();
 	        }
 	        @Override
 	        public void onSignInFailed() {
 	            // handle sign-in failure (e.g. show Sign In button)
+	        	login(false);
+	        	isShow = false;
 	        }
 
 	    };
@@ -55,14 +61,33 @@ public class google {
 			mHelper.onActivityResult(request, response, data);
 	}
 	
-	public static void show(int score)
+	public static void show()
 	{
-		app.startActivityForResult(Games.Leaderboards.getLeaderboardIntent(mHelper.getApiClient(), "CgkIiI6vte0DEAIQAQ"), 100);
+		Log.d("cocos2d-x debug info", "show Leaderboards");
+		Cocos2dxHelper.getActivity().runOnUiThread(new Runnable(){
+
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				app.startActivityForResult(Games.Leaderboards.getLeaderboardIntent(mHelper.getApiClient(), "CgkIiI6vte0DEAIQAQ"), 100);
+			}
+			
+		});
 	}
 	
 	private static void sumbit(int score)
 	{
-		Games.Leaderboards.submitScore(mHelper.getApiClient(), "CgkIiI6vte0DEAIQAQ", score);
+		Log.d("cocos2d-x debug info", "sumbit() score");
+		final int s = score;
+		Cocos2dxHelper.getActivity().runOnUiThread(new Runnable(){
+
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				Games.Leaderboards.submitScore(mHelper.getApiClient(), "CgkIiI6vte0DEAIQAQ", s);
+			}
+			
+		});
 	}
 	
 	private static native void login(boolean success);

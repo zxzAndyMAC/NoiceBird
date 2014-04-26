@@ -7,6 +7,10 @@ extern "C"
 	extern void    stopRecord();
 	
 	extern void    setAdsVisible(bool i);
+	
+	extern bool    startGoogle();
+	extern void    submitScore(int score);
+	extern void    showGoogle();
 };
 
 #endif

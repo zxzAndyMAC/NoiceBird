@@ -34,6 +34,7 @@ public:
 
 private:
 	void  SoundeHandler(float db) override;
+	void  LeaderBoardEnable(bool enable) override;
 
 	int   b_gamestate;
 	float b_velocity;
@@ -42,7 +43,13 @@ private:
 	float b_y;
 	int   b_moode;
 	float b_sound;
+	float b_floorspeed;
+	float b_gravity;
+	float b_minlr;
+	float b_maxdis;
+	//bool  b_leaderbordenable;
 
+	void  initRes();
 	void  initBird();
 	void  updateSoundBanner();
 	void  updateFloor();

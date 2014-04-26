@@ -39,6 +39,8 @@
 #define RES_SOUND_MODE    "bird/sound_mode.png"
 #define RES_SOUND_BANNER  "bird/sound_banner.png"
 #define RES_SOUND_BANNER_O  "bird/sound_banner_o.png"
+#define RES_LOGO_1	      "bird/logo-origin_1.png"
+#define RES_LOGO_2	      "bird/logo-origin_2.png"
 
 //sound
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
@@ -72,6 +74,8 @@
 #define TAG_SOUND		1027
 #define TAG_SOUND_BANNER 1028
 #define TAG_SOUND_BANNER_O 1029
+#define TAG_LOGO_1       1030
+#define TAG_LOGO_2       1031
 
 //states
 #define GAME_STATUS_START      10
@@ -108,6 +112,6 @@ static float MIN_DB = 10;
 #define BIRD_VELOCITY    5
 #define BIRD_UP_VELOCITY 10
 #define MAX_DIS          200.0
-#define MIN_DB			 10
+#define MIN_DB			 8
 #endif
 #endif

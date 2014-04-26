@@ -12,9 +12,16 @@ public:
 	static Sound* getInstance();
 	inline void setDispatcher(SoundDispatcher* sd);
 	inline void HandleSound(float db);
+	inline void EnableLeaderBoard(bool enable);
 private:
 	SoundDispatcher* sd;
 };
+
+void Sound::EnableLeaderBoard(bool enable)
+{
+	if(NULL == this->sd) return;
+	this->sd->LeaderBoardEnable(enable);
+} 
 
 void Sound::HandleSound(float db)
 {
