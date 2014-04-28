@@ -164,7 +164,7 @@ public abstract class Cocos2dxActivity extends Activity implements Cocos2dxHelpe
         framelayout.addView(this.mGLSurfaceView);
         
         //IMBanner 
-        Ads.banner = new IMBanner(this, "60fa9b8684bb40b0a77d624b1bf2dd05" ,IMBanner.INMOBI_AD_UNIT_320X50);
+        Ads.banner = new IMBanner(this, "25c29a0fb759402fac0acff2e163f79c" ,IMBanner.INMOBI_AD_UNIT_320X50);
         final float scale = getResources().getDisplayMetrics().density;
         int width = (int) (320 * scale + 0.5f);
         int height = (int) (50 * scale + 0.5f);

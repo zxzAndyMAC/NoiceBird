@@ -48,6 +48,7 @@ MainWorld::~MainWorld()
 	SimpleAudioEngine::getInstance()->unloadEffect(SOUND_FLY);
 	SimpleAudioEngine::getInstance()->unloadEffect(SOUND_DEAD);
 	SimpleAudioEngine::getInstance()->unloadEffect(SOUND_POINT);
+	SpriteFrameCache::getInstance()->removeSpriteFramesFromFile("bird/bird.plist");
 }
 
 // on "init" you need to initialize your instance
@@ -71,26 +72,38 @@ bool MainWorld::init()
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
 	initRes();
 #else
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
+	setAdsVisible(false);
+#endif
 	Size visibleSize = Director::getInstance()->getVisibleSize();
 	Point origin = Director::getInstance()->getVisibleOrigin();
 
-	auto logo = Sprite::create(RES_LOGO_1);
+	BatchNode = SpriteBatchNode::create("bird/bird.png", 50);
+	BatchNode->getTexture()->setAliasTexParameters();
+	//BatchNode->getTexture()->setAntiAliasTexParameters()
+	this->addChild(BatchNode, 0 , TAG_BATCHNODE);
+	SpriteFrameCache::getInstance()->addSpriteFramesWithFile("bird/bird.plist");
+
+	auto logo = Sprite::createWithSpriteFrameName(RES_LOGO_1);
 	logo->setPosition(origin.x+visibleSize.width/2,origin.y+visibleSize.height/2);
 	logo->setTag(TAG_LOGO_1);
-	this->addChild(logo,8);
+	BatchNode->addChild(logo,8);
 
-	auto shad = Sprite::create(RES_LOGO_2);
+	auto shad = Sprite::createWithSpriteFrameName(RES_LOGO_2);
 	shad->setPosition(origin.x+visibleSize.width/2,origin.y+visibleSize.height/2);
 	shad->setOpacity(0);
 	shad->setTag(TAG_LOGO_2);
-	this->addChild(shad,7);
+	BatchNode->addChild(shad,7);
 
 	auto action1 = FadeTo::create(1.5f,255);
 	auto action2 = FadeTo::create(1.5f, 0);
 	auto action = Sequence::create(action1, action2 ,CallFunc::create([&](){
-		this->getChildByTag(TAG_LOGO_2)->setVisible(false);
-		this->getChildByTag(TAG_LOGO_1)->setVisible(false);
-		this->removeAllChildren();
+		auto logo = (Sprite*)BatchNode->getChildByTag(TAG_LOGO_2);
+		auto shadow = (Sprite*)BatchNode->getChildByTag(TAG_LOGO_1);
+		logo->setVisible(false);
+		shadow->setVisible(false);
+		BatchNode->removeChild(logo, true);
+		BatchNode->removeChild(shadow, true);
 		this->initRes();
 	}),NULL);
 
@@ -101,6 +114,9 @@ bool MainWorld::init()
 
 void MainWorld::initRes()
 {
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
+	setAdsVisible(true);
+#endif
 	Size visibleSize = Director::getInstance()->getVisibleSize();
 	Point origin = Director::getInstance()->getVisibleOrigin();
 
@@ -114,31 +130,31 @@ void MainWorld::initRes()
 	//b_leaderbordenable = false;
 
 	// game bg
-	auto bg = Sprite::create(RES_BIRD_BG);
+	auto bg = Sprite::createWithSpriteFrameName(RES_BIRD_BG);
 	bg->setPosition(origin.x+visibleSize.width / 2, origin.y+visibleSize.height / 2);
 	bg->setScale(visibleSize.width / bg->getContentSize().width, visibleSize.height / bg->getContentSize().height);
-	this->addChild(bg);
+	BatchNode->addChild(bg);
 
 	float scaleX = visibleSize.width / bg->getContentSize().width;
 	float scaleY = visibleSize.height / bg->getContentSize().height;
 
 	//floor
-	auto floor = Sprite::create(RES_BIRD_FLOOR);
+	auto floor = Sprite::createWithSpriteFrameName(RES_BIRD_FLOOR);
 	floor->setScale(visibleSize.width / floor->getContentSize().width, visibleSize.height/480);
 	floor->setAnchorPoint(Point::ZERO);
 	floor->setPosition(origin.x,origin.y);
 	floor->setTag(TAG_FLOOR_1);
-	this->addChild(floor,3);
+	BatchNode->addChild(floor,3);
 
-	auto floor2 = Sprite::create(RES_BIRD_FLOOR);
+	auto floor2 = Sprite::createWithSpriteFrameName(RES_BIRD_FLOOR);
 	floor2->setScale(visibleSize.width / floor2->getContentSize().width, visibleSize.height/480);
 	floor2->setAnchorPoint(Point::ZERO);
 	floor2->setPosition(origin.x+visibleSize.width,origin.y);
 	floor2->setTag(TAG_FLOOR_2);
-	this->addChild(floor2,3);
+	BatchNode->addChild(floor2,3);
 
 	// voice btn
-	auto startBtn = MenuItemImage::create(RES_BIRD_VOICE, RES_BIRD_VOICEP, CC_CALLBACK_1(MainWorld::gameNoice, this));
+	auto startBtn = MenuItemSprite::create(Sprite::createWithSpriteFrameName(RES_BIRD_VOICE), Sprite::createWithSpriteFrameName(RES_BIRD_VOICEP), CC_CALLBACK_1(MainWorld::gameNoice, this));
 	startBtn->setScale(scaleX,scaleY);
 	startBtn->setPosition(origin.x+visibleSize.width / 4, origin.y+startBtn->getScaleY()*startBtn->getContentSize().height/2+floor->getContentSize().height*floor->getScaleY());
 	auto menu = Menu::create(startBtn, NULL);
@@ -147,7 +163,7 @@ void MainWorld::initRes()
 	this->addChild(menu, 4);
 
 	//touch btn
-	auto touchBtn = MenuItemImage::create(RES_BIRD_TOUCH, RES_BIRD_TOUCHP, CC_CALLBACK_1(MainWorld::gameTouch, this));
+	auto touchBtn = MenuItemSprite::create(Sprite::createWithSpriteFrameName(RES_BIRD_TOUCH), Sprite::createWithSpriteFrameName(RES_BIRD_TOUCHP), CC_CALLBACK_1(MainWorld::gameTouch, this));
 	touchBtn->setScale(scaleX,scaleY);
 	touchBtn->setPosition(origin.x+(3*visibleSize.width) / 4, origin.y+touchBtn->getScaleY()*startBtn->getContentSize().height/2+floor->getContentSize().height*floor->getScaleY());
 	auto menu2 = Menu::create(touchBtn, NULL);
@@ -156,7 +172,7 @@ void MainWorld::initRes()
 	this->addChild(menu2, 4);
 
 	//rank btn
-	auto rankBtn = MenuItemImage::create(RES_BIRD_RANK, RES_BIRD_RANKP, CC_CALLBACK_1(MainWorld::gameRank, this));
+	auto rankBtn = MenuItemSprite::create(Sprite::createWithSpriteFrameName(RES_BIRD_RANK), Sprite::createWithSpriteFrameName(RES_BIRD_RANKP), CC_CALLBACK_1(MainWorld::gameRank, this));
 	rankBtn->setScale(scaleX,scaleY);
 	rankBtn->setPosition(origin.x+visibleSize.width / 2, origin.y+startBtn->getScaleY()*startBtn->getContentSize().height*3/2+floor->getContentSize().height*floor->getScaleY());
 	auto menu4 = Menu::create(rankBtn, NULL);
@@ -165,7 +181,7 @@ void MainWorld::initRes()
 	this->addChild(menu4, 4);
 
 	//rate Btn
-	auto rateBtn = MenuItemImage::create(RES_BIRD_RATE, RES_BIRD_RATE, CC_CALLBACK_1(MainWorld::gameRate, this));
+	auto rateBtn = MenuItemSprite::create(Sprite::createWithSpriteFrameName(RES_BIRD_RATE), Sprite::createWithSpriteFrameName(RES_BIRD_RATE), CC_CALLBACK_1(MainWorld::gameRate, this));
 	rateBtn->setScale(scaleX,scaleY);
 	rateBtn->setPosition(origin.x+visibleSize.width / 2, origin.y + rankBtn->getPositionY() + rateBtn->getContentSize().height*scaleY*1.5);
 	auto menu3 = Menu::create(rateBtn, NULL);
@@ -174,35 +190,35 @@ void MainWorld::initRes()
 	this->addChild(menu3, 4);
 
 	// bird
-	auto bird = Sprite::create(RES_BIRD_BIRD_1_1);
+	auto bird = Sprite::createWithSpriteFrameName(RES_BIRD_BIRD_1_1);
 	bird->setScale(scaleX,scaleY);
 	b_y = origin.y+rateBtn->getPositionY()+rateBtn->getContentSize().height*scaleY+ rateBtn->getContentSize().height*scaleY/2;
 	bird->setPosition(origin.x+visibleSize.width / 2, b_y);
 	bird->setTag(TAG_BIRD);
-	this->addChild(bird, 2);
+	BatchNode->addChild(bird, 2);
 
 
 	// logo
-	auto logo = Sprite::create(RES_BIRD_LOGO);
+	auto logo = Sprite::createWithSpriteFrameName(RES_BIRD_LOGO);
 	logo->setScale(scaleX,scaleY);
 	logo->setPosition(origin.x+visibleSize.width / 2, origin.y+bird->getPositionY()+bird->getContentSize().height*scaleY+ bird->getContentSize().height*scaleY*2);
 	logo->setTag(TAG_LOGO);
-	this->addChild(logo, 1);
+	BatchNode->addChild(logo, 1);
 
 	//pipeline
 	for(int i=0;i<3;i++)
 	{
-		pipelines_down[i] = Sprite::create(RES_BIRD_OBD);
+		pipelines_down[i] = Sprite::createWithSpriteFrameName(RES_BIRD_OBD);
 		pipelines_down[i]->setScale(scaleX,scaleY);
 		pipelines_down[i]->setVisible(false);
 		pipelines_down[i]->setAnchorPoint(Point::ZERO);
-		this->addChild(pipelines_down[i], 1);
+		BatchNode->addChild(pipelines_down[i], 1);
 
-		pipelines_up[i] = Sprite::create(RES_BIRD_OBU);
+		pipelines_up[i] = Sprite::createWithSpriteFrameName(RES_BIRD_OBU);
 		pipelines_up[i]->setScale(scaleX,scaleY);
 		pipelines_up[i]->setVisible(false);
 		pipelines_up[i]->setAnchorPoint(Point::ZERO);
-		this->addChild(pipelines_up[i], 1);
+		BatchNode->addChild(pipelines_up[i], 1);
 	}
 
 	// score
@@ -220,12 +236,12 @@ void MainWorld::initRes()
 	score->setTag(TAG_SCORE);
 
 	//tap
-	auto tapsprite = Sprite::create(RES_BIRD_TAP);
+	auto tapsprite = Sprite::createWithSpriteFrameName(RES_BIRD_TAP);
 	tapsprite->setScale(scaleX,scaleY);
 	tapsprite->setPosition(origin.x+visibleSize.width/2, origin.y+visibleSize.height/2);
 	tapsprite->setVisible(false);
 	tapsprite->setTag(TAG_TAP);
-	this->addChild(tapsprite, 3);
+	BatchNode->addChild(tapsprite, 3);
 
 	auto layer = LayerColor::create(Color4B(0,0,0,0));
 	layer->setTag(TAG_COLOR);
@@ -233,15 +249,15 @@ void MainWorld::initRes()
 	this->addChild(layer, 5);
 
 	//sound mode
-	auto soundsprite = Sprite::create(RES_SOUND_MODE);
+	auto soundsprite = Sprite::createWithSpriteFrameName(RES_SOUND_MODE);
 	soundsprite->setScale(scaleX,scaleY);
 	soundsprite->setPosition(origin.x+visibleSize.width/2, origin.y+visibleSize.height/2);
 	soundsprite->setVisible(false);
 	soundsprite->setTag(TAG_SOUND);
-	this->addChild(soundsprite, 3);
+	BatchNode->addChild(soundsprite, 3);
 
 	//score result
-	auto score_result = Sprite::create(RES_BIRD_RESULT);
+	auto score_result = Sprite::createWithSpriteFrameName(RES_BIRD_RESULT);
 	score_result->setScale(scaleX,scaleY);
 	score_result->setAnchorPoint(Point::ANCHOR_MIDDLE_BOTTOM);
 	score_result->setPosition(origin.x+visibleSize.width/2, rateBtn->getPositionY()+rateBtn->getContentSize().height);
@@ -262,7 +278,7 @@ void MainWorld::initRes()
 	Value s(UserDefault::getInstance()->getIntegerForKey("score"));
 	score_best->setString(s.getDescription());
 
-	auto _new = Sprite::create(RES_BIRD_NEW);
+	auto _new = Sprite::createWithSpriteFrameName(RES_BIRD_NEW);
 	_new->setAnchorPoint(Point::ZERO);
 	_new->setTag(TAG_NEW);
 	_new->setPosition(_new->getContentSize().width/2,_new->getContentSize().height*2);
@@ -272,16 +288,16 @@ void MainWorld::initRes()
 	score_result->setVisible(false);
 
 	//gameover
-	auto gameover = Sprite::create(RES_GAME_OVER);
+	auto gameover = Sprite::createWithSpriteFrameName(RES_GAME_OVER);
 	gameover->setScale(scaleX,scaleY);
 	gameover->setAnchorPoint(Point::ANCHOR_MIDDLE_TOP);
 	gameover->setPosition(origin.x+visibleSize.width/2,origin.y+visibleSize.height-10);
 	gameover->setTag(TAG_OVER);
 	gameover->setVisible(false);
-	this->addChild(gameover,4);
+	BatchNode->addChild(gameover,4);
 
 	//sound banner
-	auto sound_banner = Sprite::create(RES_SOUND_BANNER_O);
+	auto sound_banner = Sprite::createWithSpriteFrameName(RES_SOUND_BANNER_O);
 	sound_banner->setScale(scaleX,scaleY);
 	sound_banner->setAnchorPoint(Point::ZERO);
 	sound_banner->setPosition(origin.x+50, origin.y+floor->getContentSize().height*floor->getScaleY()+50);
@@ -290,7 +306,7 @@ void MainWorld::initRes()
 	//	auto s_b_o = Sprite::create(RES_SOUND_BANNER);
 	//	s_b_o->setTag(TAG_SOUND_BANNER_O);
 	//	s_b_o->setAnchorPoint(Point::ZERO);
-	auto s_b_o = ProgressTimer::create(Sprite::create(RES_SOUND_BANNER));
+	auto s_b_o = ProgressTimer::create(Sprite::createWithSpriteFrameName(RES_SOUND_BANNER));
 	s_b_o->setType(ProgressTimer::Type::BAR);
 	s_b_o->setMidpoint(Point(0,0));
 	s_b_o->setBarChangeRate(Point(0, 1));
@@ -332,33 +348,34 @@ void MainWorld::initBird()
 	Value s(b_score);
 	scoreSprite->setString(s.getDescription());
 
-	auto bird  = this->getChildByTag(TAG_BIRD);
+	auto bird  = BatchNode->getChildByTag(TAG_BIRD);
 	bird->setRotation(0);
 	int i = rand()%4 + 1;
 	Animation* an = Animation::create();
+	auto cache = SpriteFrameCache::getInstance();
 	if(1 == i)
 	{
-		an->addSpriteFrameWithFile(BIRD_RAND(1, 1));
-		an->addSpriteFrameWithFile(BIRD_RAND(1, 2));
-		an->addSpriteFrameWithFile(BIRD_RAND(1, 3));
+		an->addSpriteFrame(cache->getSpriteFrameByName(BIRD_RAND(1, 1)));
+		an->addSpriteFrame(cache->getSpriteFrameByName(BIRD_RAND(1, 2)));
+		an->addSpriteFrame(cache->getSpriteFrameByName(BIRD_RAND(1, 3)));
 	}
 	else if(2 == i)
 	{
-		an->addSpriteFrameWithFile(BIRD_RAND(2, 1));
-		an->addSpriteFrameWithFile(BIRD_RAND(2, 2));
-		an->addSpriteFrameWithFile(BIRD_RAND(2, 3));
+		an->addSpriteFrame(cache->getSpriteFrameByName(BIRD_RAND(2, 1)));
+		an->addSpriteFrame(cache->getSpriteFrameByName(BIRD_RAND(2, 2)));
+		an->addSpriteFrame(cache->getSpriteFrameByName(BIRD_RAND(2, 3)));
 	}
 	else if(3 == i)
 	{
-		an->addSpriteFrameWithFile(BIRD_RAND(3, 1));
-		an->addSpriteFrameWithFile(BIRD_RAND(3, 2));
-		an->addSpriteFrameWithFile(BIRD_RAND(3, 3));
+		an->addSpriteFrame(cache->getSpriteFrameByName(BIRD_RAND(3, 1)));
+		an->addSpriteFrame(cache->getSpriteFrameByName(BIRD_RAND(3, 2)));
+		an->addSpriteFrame(cache->getSpriteFrameByName(BIRD_RAND(3, 3)));
 	}
 	else
 	{
-		an->addSpriteFrameWithFile(BIRD_RAND(4, 1));
-		an->addSpriteFrameWithFile(BIRD_RAND(4, 2));
-		an->addSpriteFrameWithFile(BIRD_RAND(4, 3));
+		an->addSpriteFrame(cache->getSpriteFrameByName(BIRD_RAND(4, 1)));
+		an->addSpriteFrame(cache->getSpriteFrameByName(BIRD_RAND(4, 2)));
+		an->addSpriteFrame(cache->getSpriteFrameByName(BIRD_RAND(4, 3)));
 	}
 	an->setDelayPerUnit(BIRD_ANIM_S);
 	an->setLoops(-1);
@@ -401,19 +418,19 @@ void MainWorld::initGame()
 			if(this->b_gamestate == GAME_STATUS_GAME_END)
 			{
 				this->initBird();
-				this->getChildByTag(TAG_BIRD)->setPositionY(b_y);
+				BatchNode->getChildByTag(TAG_BIRD)->setPositionY(b_y);
 			}
-			this->getChildByTag(TAG_BIRD)->setPositionX(origin.x+visibleSize.width/4);
-			this->getChildByTag(TAG_BIRD)->stopActionByTag(TAG_FLY);
+			BatchNode->getChildByTag(TAG_BIRD)->setPositionX(origin.x+visibleSize.width/4);
+			BatchNode->getChildByTag(TAG_BIRD)->stopActionByTag(TAG_FLY);
 			setStartMenuVisiable(false);
 			if (b_moode == MODE_TOUCH)
 			{
-				this->getChildByTag(TAG_TAP)->setVisible(true);
+				BatchNode->getChildByTag(TAG_TAP)->setVisible(true);
 			}
 			else
 			{
 				this->getChildByTag(TAG_SOUND_BANNER)->setVisible(true);
-				this->getChildByTag(TAG_SOUND)->setVisible(true);
+				BatchNode->getChildByTag(TAG_SOUND)->setVisible(true);
 			}
 			this->getChildByTag(TAG_SCORE)->setVisible(true);
 			this->b_gamestate = GAME_STATUS_PRE;
@@ -432,8 +449,8 @@ void MainWorld::gameNoice(Ref* pSender)
 {
 	b_moode = MODE_SOUND;
 
-	b_floorspeed = FLOOR_SPEED/2;
-	b_gravity = BIRD_GRAVITY/3;
+	b_floorspeed = FLOOR_SPEED*2/3;
+	b_gravity = BIRD_GRAVITY/2;
 	b_minlr = MIN_LEFT_RIGHT*1.2;
 	b_maxdis = MAX_DIS-80;
 
@@ -464,12 +481,12 @@ void MainWorld::gameready()
 	Size visibleSize = Director::getInstance()->getVisibleSize();
 	Point origin = Director::getInstance()->getVisibleOrigin();
 	
-	this->getChildByTag(TAG_BIRD)->setPositionX(origin.x+visibleSize.width/4);	
+	BatchNode->getChildByTag(TAG_BIRD)->setPositionX(origin.x+visibleSize.width/4);	
 	this->b_gamestate = GAME_STATUS_READY;
 	auto action = Sequence::create(DelayTime::create(2.0f),										
 		CallFunc::create(
 		[&](){
-			if(this->b_gamestate == GAME_STATUS_GAME_OVER)
+			if(this->b_gamestate == GAME_STATUS_GAME_OVER || this->b_gamestate == GAME_STATUS_GAME_END)
 				return;
 			this->b_gamestate = GAME_STATUS_PLAYING;
 			pipelines_up[0]->setVisible(true);
@@ -506,14 +523,16 @@ void MainWorld::setStartMenuVisiable(bool isVisiable)
 	this->getChildByTag(TAG_TOUCH_BTN)->setVisible(isVisiable);
 	this->getChildByTag(TAG_RANK_BTN)->setVisible(isVisiable);
 	this->getChildByTag(TAG_RATE_BTN)->setVisible(isVisiable);
-	this->getChildByTag(TAG_LOGO)->setVisible(isVisiable);
-	this->getChildByTag(TAG_OVER)->setVisible(isVisiable);
+	BatchNode->getChildByTag(TAG_LOGO)->setVisible(isVisiable);
+	BatchNode->getChildByTag(TAG_OVER)->setVisible(isVisiable);
 	this->getChildByTag(TAG_RESULT)->setVisible(isVisiable);
 }
 
 void MainWorld::gameRate(Ref* pSender)
 {
-
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
+	googleRate();
+#endif
 }
 
 void MainWorld::gameRank(Ref* pSender)
@@ -559,12 +578,12 @@ void MainWorld::gameOver()
 {
 	if (b_moode == MODE_TOUCH)
 	{
-		this->getChildByTag(TAG_TAP)->setVisible(false);
+		BatchNode->getChildByTag(TAG_TAP)->setVisible(false);
 	}
 	else
 	{
 		this->getChildByTag(TAG_SOUND_BANNER)->setVisible(false);
-		this->getChildByTag(TAG_SOUND)->setVisible(false);
+		BatchNode->getChildByTag(TAG_SOUND)->setVisible(false);
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
 		stopRecord();
 		b_sound = 0;
@@ -580,7 +599,7 @@ void MainWorld::gameOver()
 	auto result = this->getChildByTag(TAG_RESULT);
 	result->setVisible(true);
 	this->getChildByTag(TAG_TOUCH_BTN)->setVisible(true);
-	this->getChildByTag(TAG_OVER)->setVisible(true);
+	BatchNode->getChildByTag(TAG_OVER)->setVisible(true);
 	result->getChildByTag(TAG_NEW)->setVisible(false);
 	auto sc = (Label*)result->getChildByTag(TAG_SCORE1);
 	Value s(b_score);
@@ -598,12 +617,14 @@ void MainWorld::gameOver()
 
 void MainWorld::checkCollision()
 {
-	Sprite* bird = (Sprite*)this->getChildByTag(TAG_BIRD);
+	if(this->b_gamestate == GAME_STATUS_GAME_OVER) return;
+
+	Sprite* bird = (Sprite*)BatchNode->getChildByTag(TAG_BIRD);
 	Rect rect_o = bird->getBoundingBox();
 	Rect rect = Rect(rect_o.getMinX()+4, rect_o.getMinY(), bird->getContentSize().width*bird->getScaleX()-8,bird->getContentSize().height*bird->getScaleY()-6);
 
-	bool ao_f = rect.intersectsRect(this->getChildByTag(TAG_FLOOR_1)->getBoundingBox());
-	bool ao_f2 = rect.intersectsRect(this->getChildByTag(TAG_FLOOR_2)->getBoundingBox());
+	bool ao_f = rect.intersectsRect(BatchNode->getChildByTag(TAG_FLOOR_1)->getBoundingBox());
+	bool ao_f2 = rect.intersectsRect(BatchNode->getChildByTag(TAG_FLOOR_2)->getBoundingBox());
 	if(ao_f || ao_f2)
 	{
 		b_gamestate = GAME_STATUS_GAME_OVER;
@@ -627,7 +648,7 @@ void MainWorld::updatePipelines()
 {
 	Size visibleSize = Director::getInstance()->getVisibleSize();
 	Point origin = Director::getInstance()->getVisibleOrigin();
-	auto bird = this->getChildByTag(TAG_BIRD);
+	auto bird = BatchNode->getChildByTag(TAG_BIRD);
 	for(int i=0;i<3;i++)
 	{
 		auto x = pipelines_up[i]->getPositionX();
@@ -670,7 +691,7 @@ void MainWorld::updatePipelines()
 
 float MainWorld::randh()
 {
-	auto floor_1 = this->getChildByTag(TAG_FLOOR_1);
+	auto floor_1 = BatchNode->getChildByTag(TAG_FLOOR_1);
 	auto floor_h = floor_1->getContentSize().height*(floor_1->getScaleY());
 	auto min_y = floor_h + (MIN_UP_DOWN/2);
 	auto max_y = Director::getInstance()->getVisibleSize().height - (MIN_UP_DOWN*6/4);
@@ -690,8 +711,8 @@ void MainWorld::updateFloor()
 	//update floor 
 	Size visibleSize = Director::getInstance()->getVisibleSize();
 	Point origin = Director::getInstance()->getVisibleOrigin();
-	auto floor_1 = this->getChildByTag(TAG_FLOOR_1);
-	auto floor_2 = this->getChildByTag(TAG_FLOOR_2);
+	auto floor_1 = BatchNode->getChildByTag(TAG_FLOOR_1);
+	auto floor_2 = BatchNode->getChildByTag(TAG_FLOOR_2);
 
 	auto floor_1_x = floor_1->getPositionX();
 	if(floor_1_x<=-1*visibleSize.width)
@@ -708,7 +729,7 @@ void MainWorld::updateFloor()
 
 void MainWorld::updateBird()
 {
-	auto bird  = this->getChildByTag(TAG_BIRD);
+	auto bird  = BatchNode->getChildByTag(TAG_BIRD);
 	if(this->b_gamestate == GAME_STATUS_GAME_OVER)
 	{
 		if(bird->getRotation()<45.0f)
@@ -719,7 +740,7 @@ void MainWorld::updateBird()
 		}
 		float h = (bird->getContentSize().height*bird->getScaleY())/2;
 		float y = bird->getPositionY()-h;
-		auto floor = this->getChildByTag(TAG_FLOOR_1);
+		auto floor = BatchNode->getChildByTag(TAG_FLOOR_1);
 		float y_f = floor->getContentSize().height*floor->getScaleY();
 		if(y>y_f)
 		{
@@ -772,14 +793,14 @@ void MainWorld::onTouchesBegan(const vector<Touch*>& touches, Event* event)
 	if(b_gamestate == GAME_STATUS_READY || b_gamestate == GAME_STATUS_PLAYING)
 	{
 		if(b_moode != MODE_TOUCH) return;
-		this->getChildByTag(TAG_BIRD)->setRotation(-30);
+		BatchNode->getChildByTag(TAG_BIRD)->setRotation(-30);
 		b_velocity = BIRD_UP_VELOCITY;
 		SimpleAudioEngine::getInstance()->playEffect(SOUND_FLY);
 	}
 	else if(b_gamestate == GAME_STATUS_PRE)
 	{
 		if(b_moode != MODE_TOUCH) return;
-		this->getChildByTag(TAG_TAP)->setVisible(false);
+		BatchNode->getChildByTag(TAG_TAP)->setVisible(false);
 		this->gameready();
 	}
 }
@@ -804,14 +825,14 @@ void MainWorld::SoundeHandler(float db)
 		if(b_gamestate == GAME_STATUS_READY || b_gamestate == GAME_STATUS_PLAYING)
 		{
 			if(b_moode == MODE_TOUCH) return;
-			this->getChildByTag(TAG_BIRD)->setRotation(-30);
-			b_velocity = BIRD_UP_VELOCITY/2;
+			BatchNode->getChildByTag(TAG_BIRD)->setRotation(-30);
+			b_velocity = BIRD_UP_VELOCITY*2/3;
 			SimpleAudioEngine::getInstance()->playEffect(SOUND_FLY);
 		}
 		else if(b_gamestate == GAME_STATUS_PRE)
 		{
 			if(b_moode == MODE_TOUCH) return;
-			this->getChildByTag(TAG_SOUND)->setVisible(false);
+			BatchNode->getChildByTag(TAG_SOUND)->setVisible(false);
 			this->gameready();
 		}
 	}

@@ -11,6 +11,8 @@ extern "C"
 	extern bool    startGoogle();
 	extern void    submitScore(int score);
 	extern void    showGoogle();
+	
+	extern void    googleRate();
 };
 
 #endif

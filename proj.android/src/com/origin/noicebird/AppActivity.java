@@ -42,7 +42,7 @@ public class AppActivity extends Cocos2dxActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState)
 	{
-		InMobi.initialize(this, "60fa9b8684bb40b0a77d624b1bf2dd05");
+		InMobi.initialize(this, "25c29a0fb759402fac0acff2e163f79c");
 		InMobi.setLogLevel(LOG_LEVEL.DEBUG);
 		super.onCreate(savedInstanceState);
 		google.initGoogle(this);

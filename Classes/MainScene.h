@@ -47,6 +47,7 @@ private:
 	float b_gravity;
 	float b_minlr;
 	float b_maxdis;
+	SpriteBatchNode	  *BatchNode;
 	//bool  b_leaderbordenable;
 
 	void  initRes();

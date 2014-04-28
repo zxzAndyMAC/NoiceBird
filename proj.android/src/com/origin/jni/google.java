@@ -4,6 +4,7 @@ import org.cocos2dx.lib.Cocos2dxHelper;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.util.Log;
 
 import com.google.android.gms.games.Games;
@@ -70,6 +71,24 @@ public class google {
 			public void run() {
 				// TODO Auto-generated method stub
 				app.startActivityForResult(Games.Leaderboards.getLeaderboardIntent(mHelper.getApiClient(), "CgkIiI6vte0DEAIQAQ"), 100);
+			}
+			
+		});
+	}
+	
+	public static void rate()
+	{
+		Cocos2dxHelper.getActivity().runOnUiThread(new Runnable(){
+
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				final String appPackageName = Cocos2dxHelper.getActivity().getPackageName(); // getPackageName() from Context or Activity object
+				try {
+					Cocos2dxHelper.getActivity().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + appPackageName)));
+				} catch (android.content.ActivityNotFoundException anfe) {
+					Cocos2dxHelper.getActivity().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=" + appPackageName)));
+				}
 			}
 			
 		});

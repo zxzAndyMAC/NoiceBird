@@ -102,4 +102,17 @@ extern "C"
 			t.env->DeleteLocalRef(t.classID);
 		}
 	}
+	
+	void googleRate()
+	{
+		JniMethodInfo t;
+		if (JniHelper::getStaticMethodInfo(t,
+			"com/origin/jni/google",
+			"rate",
+			"()V"))
+		{
+			t.env->CallStaticVoidMethod(t.classID, t.methodID);
+			t.env->DeleteLocalRef(t.classID);
+		}
+	}
 };
