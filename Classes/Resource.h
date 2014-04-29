@@ -113,6 +113,6 @@ static float MIN_DB = 10;
 #define BIRD_VELOCITY    5
 #define BIRD_UP_VELOCITY 10
 #define MAX_DIS          200.0
-#define MIN_DB			 8
+#define MIN_DB			 7
 #endif
 #endif

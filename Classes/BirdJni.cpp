@@ -62,12 +62,40 @@ extern "C"
 		}
 	}
 	
-	bool startGoogle()
+	void showin()
+	{
+		JniMethodInfo t;
+		if (JniHelper::getStaticMethodInfo(t,
+			"com/origin/jni/Ads",
+			"showin",
+			"()V"))
+		{
+			t.env->CallStaticVoidMethod(t.classID, t.methodID);
+			t.env->DeleteLocalRef(t.classID);
+		}
+	}
+	
+	bool startGoogle(int type)
 	{
 		JniMethodInfo t;
 		if (JniHelper::getStaticMethodInfo(t,
 			"com/origin/jni/google",
 			"start",
+			"(I)Z"))
+		{
+			jboolean ret = t.env->CallStaticBooleanMethod(t.classID, t.methodID, type);
+			t.env->DeleteLocalRef(t.classID);
+			return ret;
+		}
+		return false;
+	}
+	
+	bool googleenable()
+	{
+		JniMethodInfo t;
+		if (JniHelper::getStaticMethodInfo(t,
+			"com/origin/jni/google",
+			"googleenable",
 			"()Z"))
 		{
 			jboolean ret = t.env->CallStaticBooleanMethod(t.classID, t.methodID);
@@ -77,28 +105,28 @@ extern "C"
 		return false;
 	}
 	
-	void submitScore(int score)
+	void submitScore(int score, int type)
 	{
 		JniMethodInfo t;
 		if (JniHelper::getStaticMethodInfo(t,
 			"com/origin/jni/google",
 			"sumbit",
-			"(I)V"))
+			"(II)V"))
 		{
-			t.env->CallStaticVoidMethod(t.classID, t.methodID, score);
+			t.env->CallStaticVoidMethod(t.classID, t.methodID, score, type);
 			t.env->DeleteLocalRef(t.classID);
 		}
 	}
 	
-	void showGoogle()
+	void showGoogle(int type)
 	{
 		JniMethodInfo t;
 		if (JniHelper::getStaticMethodInfo(t,
 			"com/origin/jni/google",
 			"show",
-			"()V"))
+			"(I)V"))
 		{
-			t.env->CallStaticVoidMethod(t.classID, t.methodID);
+			t.env->CallStaticVoidMethod(t.classID, t.methodID, type);
 			t.env->DeleteLocalRef(t.classID);
 		}
 	}

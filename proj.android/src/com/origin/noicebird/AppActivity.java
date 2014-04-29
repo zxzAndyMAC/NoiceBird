@@ -33,6 +33,8 @@ import android.os.Bundle;
  
 import com.inmobi.commons.InMobi;
 import com.inmobi.commons.InMobi.LOG_LEVEL;
+import com.inmobi.monetization.IMInterstitial;
+import com.origin.jni.Ads;
 import com.origin.jni.google;
 import com.origin.jni.jni;
 
@@ -43,9 +45,12 @@ public class AppActivity extends Cocos2dxActivity {
 	public void onCreate(Bundle savedInstanceState)
 	{
 		InMobi.initialize(this, "25c29a0fb759402fac0acff2e163f79c");
-		InMobi.setLogLevel(LOG_LEVEL.DEBUG);
+		//InMobi.setLogLevel(LOG_LEVEL.DEBUG);
 		super.onCreate(savedInstanceState);
 		google.initGoogle(this);
+		
+		Ads.interstitial = new IMInterstitial(this, "25c29a0fb759402fac0acff2e163f79c");
+		Ads.interstitial.loadInterstitial();
 	}
 	
 	@Override

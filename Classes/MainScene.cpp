@@ -69,6 +69,8 @@ bool MainWorld::init()
 
 	srand ((unsigned)time(NULL));
 
+	b_moode = MODE_TOUCH;
+
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
 	initRes();
 #else
@@ -79,8 +81,8 @@ bool MainWorld::init()
 	Point origin = Director::getInstance()->getVisibleOrigin();
 
 	BatchNode = SpriteBatchNode::create("bird/bird.png", 50);
-	BatchNode->getTexture()->setAliasTexParameters();
-	//BatchNode->getTexture()->setAntiAliasTexParameters()
+//	BatchNode->getTexture()->setAliasTexParameters();
+
 	this->addChild(BatchNode, 0 , TAG_BATCHNODE);
 	SpriteFrameCache::getInstance()->addSpriteFramesWithFile("bird/bird.plist");
 
@@ -144,6 +146,7 @@ void MainWorld::initRes()
 	floor->setAnchorPoint(Point::ZERO);
 	floor->setPosition(origin.x,origin.y);
 	floor->setTag(TAG_FLOOR_1);
+	floor->getTexture()->setAliasTexParameters();
 	BatchNode->addChild(floor,3);
 
 	auto floor2 = Sprite::createWithSpriteFrameName(RES_BIRD_FLOOR);
@@ -151,6 +154,7 @@ void MainWorld::initRes()
 	floor2->setAnchorPoint(Point::ZERO);
 	floor2->setPosition(origin.x+visibleSize.width,origin.y);
 	floor2->setTag(TAG_FLOOR_2);
+	floor2->getTexture()->setAliasTexParameters();
 	BatchNode->addChild(floor2,3);
 
 	// voice btn
@@ -538,9 +542,19 @@ void MainWorld::gameRate(Ref* pSender)
 void MainWorld::gameRank(Ref* pSender)
 {
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
-	bool enable = startGoogle();
-	if(enable)
-		showGoogle();
+	if (b_moode == MODE_TOUCH)
+	{
+		bool enable = startGoogle(1);
+		if(enable)
+			showGoogle(1);
+	}
+	else
+	{
+		bool enable = startGoogle(2);
+		if(enable)
+			showGoogle(2);
+	}
+	
 #endif
 }
 
@@ -605,13 +619,54 @@ void MainWorld::gameOver()
 	Value s(b_score);
 	sc->setString(s.getDescription());
 
-	int score = UserDefault::getInstance()->getIntegerForKey("score");
+	int score;
+	if (b_moode == MODE_TOUCH)
+		score = UserDefault::getInstance()->getIntegerForKey("score");
+	else
+		score = UserDefault::getInstance()->getIntegerForKey("voice");
 	if(b_score>score)
 	{
-		UserDefault::getInstance()->setIntegerForKey("score",b_score);
+		if (b_moode == MODE_TOUCH)
+			UserDefault::getInstance()->setIntegerForKey("score",b_score);
+		else
+			UserDefault::getInstance()->setIntegerForKey("voice",b_score);
+
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
+		log("%s", "upload score");
+		if(googleenable())
+		{
+			log("%s", "upload score enable");
+			if (b_moode == MODE_TOUCH)
+				submitScore(b_score, 1);
+			else
+				submitScore(b_score, 2);
+		}
+#endif
+		score = b_score;
 		result->getChildByTag(TAG_NEW)->setVisible(true);
-		auto scb = (Label*)result->getChildByTag(TAG_BEST);
-		scb->setString(s.getDescription());
+	}
+	auto scb = (Label*)result->getChildByTag(TAG_BEST);
+	Value s_(score);
+	scb->setString(s_.getDescription());
+
+	randAd();
+}
+
+void MainWorld::randAd()
+{
+	int a = rand()%100 + 1;
+	int b_count = UserDefault::getInstance()->getIntegerForKey("count");
+	if(a<10 || b_count>10)
+	{
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
+		showin();
+#endif
+		UserDefault::getInstance()->setIntegerForKey("count", 0);
+	}
+	else
+	{
+		++b_count;
+		UserDefault::getInstance()->setIntegerForKey("count", b_count);
 	}
 }
 
@@ -844,9 +899,13 @@ void MainWorld::LeaderBoardEnable(bool enable)
 	if (enable)
 	{
 		int score = UserDefault::getInstance()->getIntegerForKey("score");
+		int voice = UserDefault::getInstance()->getIntegerForKey("voice");
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
 		log("%s","submit score (cpp)");
-		submitScore(score);
+		if(score>0)
+			submitScore(score, 1);
+		if(voice>0)
+			submitScore(voice, 2);
 #endif
 	}
 }

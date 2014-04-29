@@ -8,9 +8,11 @@ extern "C"
 	
 	extern void    setAdsVisible(bool i);
 	
-	extern bool    startGoogle();
-	extern void    submitScore(int score);
-	extern void    showGoogle();
+	extern bool    startGoogle(int type);
+	extern void    submitScore(int score, int type);
+	extern void    showGoogle(int type);
+	extern bool    googleenable();
+	extern void    showin();
 	
 	extern void    googleRate();
 };

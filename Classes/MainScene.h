@@ -64,6 +64,7 @@ private:
 	void  setPipes();
 	void  initGame();
 	void  preloadEffects();
+	void  randAd();
 };
 
 #endif // __HELLOWORLD_SCENE_H__
